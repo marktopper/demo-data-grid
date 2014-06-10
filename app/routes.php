@@ -48,37 +48,27 @@ Route::get('adv', function()
 
 Route::get('source', function()
 {
-	// // Initiate by a database query
-	// return DataGrid::make(DB::table('cities'), array(
-	// 	'country',
-	// 	'subdivision',
-	// 	'city',
-	// 	'population',
-	// 	'country_code',
-	// 	'country_subdivision_code',
-	// ));
-
-	// // Or by an Eloquent model query
-	// return DataGrid::make(with(new City)->newQuery(), array(
-	// 	'country',
-	// 	'subdivision',
-	// 	'city',
-	// 	'population',
-	// 	'country_code',
-	// 	'country_subdivision_code',
-	// ));
-
-	// Or by an Eloquent model
-	return DataGrid::make(new City, array(
+	$columns = array(
 		'id',
 		'country',
 		'subdivision',
 		'city',
 		'population',
 		'created_at',
-	), array(
-		'sort' => 'id',
-		'direction' => 'desc',
+	);
+
+	$settings = array(
+		'sort'        => 'id',
+		'direction'   => 'desc',
 		'max_results' => 20,
-	));
+	);
+
+	// // Initiate by a database query
+	// return DataGrid::make(DB::table('cities'), $columns, $settings);
+
+	// // Or by an Eloquent model query
+	// return DataGrid::make(with(new City)->newQuery(), $columns, $settings);
+
+	// Or by an Eloquent model
+	return DataGrid::make(new City, $columns, $settings);
 });

@@ -3,10 +3,12 @@
 	<% _.each(pagination, function(p) { %>
 
 		<div class="col-md-8">
-			<p>Showing <%= p.page_start %> to <%= p.page_limit %> of <span class="total"><%= p.filtered %></span></p>
+			<p>Showing <%= p.page_start %> to <%= p.page_limit %> of <%= p.filtered %></p>
 		</div>
+
 		<div class="col-md-4">
-			<ul class="pagination pagination-lg pull-right">
+
+			<ul class="pagination pagination-sm pull-right" style="margin-top: 0">
 
 				<% if (p.previous_page !== null) { %>
 
@@ -29,6 +31,7 @@
 				<% } %>
 
 			</ul>
+
 		</div>
 
 	<% }); %>
