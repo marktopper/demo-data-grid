@@ -1,4 +1,4 @@
-<script type="text/template" data-grid="main" data-template="pagination">
+<script type="text/template" data-grid="standard" data-template="pagination">
 
 <ul class="pagination">
 

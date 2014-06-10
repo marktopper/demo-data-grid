@@ -44,10 +44,7 @@
 				<div class="collapse navbar-collapse navbar-ex1-collapse">
 					<ul class="nav navbar-nav">
 						<li {{ Request::is('/') ? 'class="active"' : null }}><a href="{{ URL::to('/') }}">Home</a></li>
-						 <li {{ Request::is('single') ? 'class="active"' : null }}><a href="{{ URL::to('single') }}">Single</a></li>
-						<!--<li {{ Request::is('standard') ? 'class="active"' : null }}><a href="{{URL::to('standard')}}">standard</a></li>
-						<li {{ Request::is('infinite') ? 'class="active"' : null }}><a href="{{URL::to('infinite')}}">infinite</a></li>
-						<li {{ Request::is('multiple') ? 'class="active"' : null }}><a href="{{URL::to('multiple')}}">multiple</a></li> -->
+						<li {{ Request::is('standard') ? 'class="active"' : null }}><a href="{{ URL::to('standard') }}">Standard</a></li>
 					</ul>
 
 					<ul class="nav navbar-nav navbar-right">
