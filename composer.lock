@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "0344f7870dc3172d50488b83f524ea00",
+    "hash": "7aba802859b0af797c79e5c6f6bcb44c",
     "packages": [
         {
             "name": "cartalyst/data-grid",
@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:cartalyst/data-grid.git",
-                "reference": "33092fcfbe3f82e1167c95c58248f6b4bbaa2fc5"
+                "reference": "79bea5287778a2c7fd83a5a5ddb752467c140e57"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cartalyst/data-grid/zipball/33092fcfbe3f82e1167c95c58248f6b4bbaa2fc5",
-                "reference": "33092fcfbe3f82e1167c95c58248f6b4bbaa2fc5",
+                "url": "https://api.github.com/repos/cartalyst/data-grid/zipball/79bea5287778a2c7fd83a5a5ddb752467c140e57",
+                "reference": "79bea5287778a2c7fd83a5a5ddb752467c140e57",
                 "shasum": ""
             },
             "require": {
@@ -88,7 +88,7 @@
                 "source": "https://github.com/cartalyst/data-grid/tree/2.0",
                 "issues": "https://github.com/cartalyst/data-grid/issues"
             },
-            "time": "2014-06-06 00:48:34"
+            "time": "2014-06-10 22:17:24"
         },
         {
             "name": "classpreloader/classpreloader",
@@ -265,16 +265,16 @@
         },
         {
             "name": "fzaninotto/faker",
-            "version": "dev-master",
+            "version": "v1.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/fzaninotto/Faker.git",
-                "reference": "0b903eaff5da0a5043e2769c5ec1f50620652812"
+                "reference": "010c7efedd88bf31141a02719f51fb44c732d5a0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fzaninotto/Faker/zipball/0b903eaff5da0a5043e2769c5ec1f50620652812",
-                "reference": "0b903eaff5da0a5043e2769c5ec1f50620652812",
+                "url": "https://api.github.com/repos/fzaninotto/Faker/zipball/010c7efedd88bf31141a02719f51fb44c732d5a0",
+                "reference": "010c7efedd88bf31141a02719f51fb44c732d5a0",
                 "shasum": ""
             },
             "require": {
@@ -286,9 +286,9 @@
             },
             "type": "library",
             "extra": {
-                "branch-alias": {
-                    "dev-master": "1.5.x-dev"
-                }
+                "branch-alias": [
+
+                ]
             },
             "autoload": {
                 "psr-0": {
@@ -311,7 +311,7 @@
                 "faker",
                 "fixtures"
             ],
-            "time": "2014-06-04 14:44:10"
+            "time": "2014-06-04 14:43:02"
         },
         {
             "name": "ircmaxell/password-compat",
@@ -1735,48 +1735,36 @@
             "time": "2014-04-23 14:04:21"
         },
         {
-            "name": "symfony/security",
+            "name": "symfony/security-core",
             "version": "2.4.x-dev",
-            "target-dir": "Symfony/Component/Security",
+            "target-dir": "Symfony/Component/Security/Core",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/Security.git",
-                "reference": "2fea8ebda136c2a1457afa8a1428ac18444fd156"
+                "url": "https://github.com/symfony/security-core.git",
+                "reference": "1fbe80d10b7a5bcb619abe3e4cfede795d9958dc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Security/zipball/2fea8ebda136c2a1457afa8a1428ac18444fd156",
-                "reference": "2fea8ebda136c2a1457afa8a1428ac18444fd156",
+                "url": "https://api.github.com/repos/symfony/security-core/zipball/1fbe80d10b7a5bcb619abe3e4cfede795d9958dc",
+                "reference": "1fbe80d10b7a5bcb619abe3e4cfede795d9958dc",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.3",
-                "symfony/event-dispatcher": "~2.1",
-                "symfony/http-foundation": "~2.1",
-                "symfony/http-kernel": "~2.4"
-            },
-            "replace": {
-                "symfony/security-acl": "self.version",
-                "symfony/security-core": "self.version",
-                "symfony/security-csrf": "self.version",
-                "symfony/security-http": "self.version"
+                "php": ">=5.3.3"
             },
             "require-dev": {
-                "doctrine/common": "~2.2",
-                "doctrine/dbal": "~2.2",
                 "ircmaxell/password-compat": "1.0.*",
                 "psr/log": "~1.0",
+                "symfony/event-dispatcher": "~2.1",
                 "symfony/expression-language": "~2.4",
-                "symfony/routing": "~2.2",
+                "symfony/http-foundation": "~2.4",
                 "symfony/validator": "~2.2"
             },
             "suggest": {
-                "doctrine/dbal": "For using the built-in ACL implementation",
                 "ircmaxell/password-compat": "For using the BCrypt password encoder in PHP <5.5",
-                "symfony/class-loader": "For using the ACL generateSql script",
+                "symfony/event-dispatcher": "",
                 "symfony/expression-language": "For using the expression voter",
-                "symfony/finder": "For using the ACL generateSql script",
-                "symfony/routing": "For using the HttpUtils class to create sub-requests, redirect the user, and match URLs",
+                "symfony/http-foundation": "",
                 "symfony/validator": "For using the user password constraint"
             },
             "type": "library",
@@ -1787,7 +1775,7 @@
             },
             "autoload": {
                 "psr-0": {
-                    "Symfony\\Component\\Security\\": ""
+                    "Symfony\\Component\\Security\\Core\\": ""
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -1806,9 +1794,9 @@
                     "homepage": "http://symfony.com/contributors"
                 }
             ],
-            "description": "Symfony Security Component",
+            "description": "Symfony Security Component - Core Library",
             "homepage": "http://symfony.com",
-            "time": "2014-05-12 09:27:48"
+            "time": "2014-04-23 14:04:21"
         },
         {
             "name": "symfony/translation",
