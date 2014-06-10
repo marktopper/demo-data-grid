@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:cartalyst/data-grid.git",
-                "reference": "79bea5287778a2c7fd83a5a5ddb752467c140e57"
+                "reference": "7a24b75a90491946c846ee4eb945eec02c7e69b1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cartalyst/data-grid/zipball/79bea5287778a2c7fd83a5a5ddb752467c140e57",
-                "reference": "79bea5287778a2c7fd83a5a5ddb752467c140e57",
+                "url": "https://api.github.com/repos/cartalyst/data-grid/zipball/7a24b75a90491946c846ee4eb945eec02c7e69b1",
+                "reference": "7a24b75a90491946c846ee4eb945eec02c7e69b1",
                 "shasum": ""
             },
             "require": {
@@ -88,7 +88,7 @@
                 "source": "https://github.com/cartalyst/data-grid/tree/2.0",
                 "issues": "https://github.com/cartalyst/data-grid/issues"
             },
-            "time": "2014-06-10 22:17:24"
+            "time": "2014-06-10 22:32:42"
         },
         {
             "name": "classpreloader/classpreloader",
