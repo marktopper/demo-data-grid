@@ -58,8 +58,8 @@ Route::get('source', function()
 	);
 
 	$settings = array(
-		'sort'        => 'id',
-		'direction'   => 'desc',
+		'sort'        => 'country',
+		'direction'   => 'asc',
 		'max_results' => 20,
 	);
 
