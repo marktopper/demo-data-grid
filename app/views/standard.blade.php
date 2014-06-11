@@ -215,10 +215,10 @@ $(function()
 
 				<thead>
 					<tr>
-						<th data-sort="country" data-grid="standard" class="sortable">Country</th>
-						<th data-sort="subdivision" data-grid="standard" class="sortable">Subdivision</th>
-						<th data-sort="city" data-grid="standard" class="sortable">City</th>
-						<th data-sort="population" data-grid="standard" class="sortable">Population</th>
+						<th class="sortable col-md-4" data-grid="standard" data-sort="country">Country</th>
+						<th class="sortable col-md-3" data-grid="standard" data-sort="subdivision">Subdivision</th>
+						<th class="sortable col-md-3" data-grid="standard" data-sort="city">City</th>
+						<th class="sortable col-md-2" data-grid="standard" data-sort="population">Population</th>
 					</tr>
 				</thead>
 				<tbody></tbody>
