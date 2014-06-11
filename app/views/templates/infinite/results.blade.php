@@ -1,5 +1,7 @@
 <script type="text/template" data-grid="infinite" data-template="results">
+
 	<div class="row">
+
 		<% _.each(results, function(r) { %>
 
 			<li class="col-md-4">
@@ -13,5 +15,7 @@
 			</li>
 
 		<% }); %>
+
 	</div>
+
 </script>

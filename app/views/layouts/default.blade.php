@@ -45,6 +45,7 @@
 					<ul class="nav navbar-nav">
 						<li {{ Request::is('/') ? 'class="active"' : null }}><a href="{{ URL::to('/') }}">Home</a></li>
 						<li {{ Request::is('standard') ? 'class="active"' : null }}><a href="{{ URL::to('standard') }}">Standard</a></li>
+						<li {{ Request::is('infinite') ? 'class="active"' : null }}><a href="{{ URL::to('infinite') }}">Infinite</a></li>
 					</ul>
 
 					<ul class="nav navbar-nav navbar-right">
