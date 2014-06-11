@@ -16,35 +16,32 @@ Route::get('/', function()
 	return View::make('home');
 });
 
-Route::get('single', function()
-{
-	return View::make('single');
-});
-
 Route::get('standard', function()
 {
 	return View::make('standard');
 });
-
-Route::get('advanced', function()
-{
-	return View::make('advanced');
-});
-
 Route::get('infinite', function()
 {
 	return View::make('infinite');
 });
 
-Route::get('multiple', function()
-{
-	return View::make('multiple');
-});
 
-Route::get('adv', function()
-{
-	return View::make('adv');
-});
+
+
+// Route::get('advanced', function()
+// {
+// 	return View::make('advanced');
+// });
+
+// Route::get('multiple', function()
+// {
+// 	return View::make('multiple');
+// });
+
+// Route::get('adv', function()
+// {
+// 	return View::make('adv');
+// });
 
 Route::get('source', function()
 {
