@@ -4,8 +4,8 @@
 	"keywords": ["framework", "laravel"],
 	"license": "MIT",
 	"require": {
-		"laravel/framework": "4.2.*"
-		"cartalyst/data-grid": "dev-master",
+		"laravel/framework": "4.2.*",
+		"cartalyst/data-grid": "~2.0",
 		"fzaninotto/faker": "1.4.*@dev",
 		"dompdf/dompdf": "*"
 	},
