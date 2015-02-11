@@ -21,7 +21,7 @@ group
 		loader: '.loader',
 		method: 'group',
 		threshold:1000,
-		throttle: 100,
+		throttle: 20,
 		sort: {
 			column: 'city',
 			direction: 'asc'
