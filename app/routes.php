@@ -20,12 +20,16 @@ Route::get('standard', function()
 {
 	return View::make('standard');
 });
+
 Route::get('infinite', function()
 {
 	return View::make('infinite');
 });
 
-
+Route::get('group', function()
+{
+	return View::make('group');
+});
 
 
 // Route::get('advanced', function()
