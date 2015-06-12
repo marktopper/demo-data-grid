@@ -9,19 +9,24 @@
 {{-- Inline styles --}}
 @section('styles')
 <link rel="stylesheet" href="{{ URL::asset('assets/css/datepicker.css') }}">
+<link rel="stylesheet" href="{{ URL::asset('assets/css/jquery.nouislider.min.css') }}">
 @stop
 
 {{-- Inline scripts --}}
 @section('scripts')
 <script src="{{ URL::asset('assets/js/moment.js') }}"></script>
 <script src="{{ URL::asset('assets/js/bootstrap-datetimepicker.js') }}"></script>
+<script src="{{ URL::asset('assets/js/jquery.nouislider.all.min.js') }}"></script>
 
 <script>
-$(function()
-{
-	// Setup DataGrid
+$(function() {
+
+    // Setup DataGrid
     var grid = $.datagrid('standard', {
-        throttle: 20,
+        pagination: {
+            throttle: 20
+        },
+        multiple: true,
         loader: '.loader',
         filters: {
             'mexico:large': {
@@ -43,15 +48,45 @@ $(function()
             }
         }
     }).on('dg:applying', function(filter) {
+
+        if (filter.name === 'population') {
+            $('.populationSlider').val([filter.query.from, filter.query.to]);
+        }
+
         console.log(this, filter);
     });
 
-	// Date Picker
-	$('.datePicker').datetimepicker({
-		pickTime: false
-	});
+    // Date Picker
+    $('.datePicker').datetimepicker({
+        pickTime: false
+    });
 
-	/**
+    $('.populationSlider').noUiSlider({
+        start: [0, 100000],
+        step: 100,
+        connect: true,
+        range: {
+            'min': 0,
+            'max': 100000
+        },
+        format: {
+            to: function(value)
+            {
+                return parseInt(value);
+            },
+
+            from: function(value)
+            {
+                return parseInt(value);
+            }
+        }
+    }).on('change', function() {
+        var range = $(this).val();
+        console.log('change', range);
+        $(this).data('grid-query', ['population', ':', range[0], ':', range[1]].join(''));
+    });
+
+    /**
 	 * DEMO ONLY EVENTS
 	 */
 	$('[data-per-page]').on('change', function()
@@ -127,40 +162,6 @@ $(function()
 
 	</div>
 
-	{{-- Date picker : Start date --}}
-	<div class="col-md-2">
-
-		<div class="form-group">
-
-			<div class="input-group datePicker" data-grid="standard">
-
-				<input type="text" data-format="DD MMM, YYYY" data-grid-filter="created" data-grid-type="range" data-grid-date-format="DD MMM, YYYY" disabled class="form-control" data-grid-range="start" data-label="Created At" placeholder="Start Date">
-
-				<span class="input-group-addon" style="cursor: pointer;"><i class="fa fa-calendar"></i></span>
-
-			</div>
-
-		</div>
-
-	</div>
-
-	{{-- Date picker : End date --}}
-	<div class="col-md-2">
-
-		<div class="form-group">
-
-			<div class="input-group datePicker" data-grid="standard" data-range-filter>
-
-                <input type="text" data-format="DD MMM, YYYY" data-grid-filter="created" data-grid-type="range" data-grid-date-format="DD MMM, YYYY" disabled class="form-control" data-grid-range="end" data-label="Created At" placeholder="End Date">
-
-				<span class="input-group-addon" style="cursor: pointer;"><i class="fa fa-calendar"></i></span>
-
-			</div>
-
-		</div>
-
-	</div>
-
 	{{-- Results per page --}}
 	<div class="col-md-2">
 
@@ -181,7 +182,7 @@ $(function()
 
 	</div>
 
-	<div class="col-md-4">
+	<div class="col-md-5">
 
 		<form data-grid-search data-grid="standard" class="form-inline" role="form">
 
@@ -208,6 +209,69 @@ $(function()
 	</div>
 
 </div>
+<br>
+<div class="row">
+
+    {{-- Date picker : Start date --}}
+    <div class="col-md-2">
+
+        <div class="form-group">
+
+            <div class="input-group datePicker"
+                 data-grid="standard"
+                 data-grid-filter="created"
+                 data-grid-type="range"
+                 data-grid-query="created"
+                 data-grid-range="start"
+                 data-grid-date-format
+                 data-grid-label="Created At">
+
+                <input type="text" data-format="DD MMM, YYYY" disabled class="form-control" placeholder="Start Date">
+
+                <span class="input-group-addon" style="cursor: pointer;"><i class="fa fa-calendar"></i></span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {{-- Date picker : End date --}}
+    <div class="col-md-2">
+
+        <div class="form-group">
+
+            <div class="input-group datePicker"
+                 data-grid="standard"
+                 data-grid-filter="created"
+                 data-grid-type="range"
+                 data-grid-query="created"
+                 data-grid-range="end"
+                 data-grid-date-format
+                 data-grid-label="Created At">
+
+                <input type="text" data-format="DD MMM, YYYY" disabled class="form-control" placeholder="End Date">
+
+                <span class="input-group-addon" style="cursor: pointer;"><i class="fa fa-calendar"></i></span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-3" style="padding-top: 7px;">
+
+        <div class="populationSlider"
+             data-grid="standard"
+             data-grid-filter="population"
+             data-grid-type="range"
+             data-grid-query="population:0:1000000"
+             data-grid-label="Population">
+        </div>
+
+    </div>
+</div>
 
 {{-- Applied filters --}}
 <div class="row">
@@ -223,7 +287,7 @@ $(function()
 
 		<div class="table-responsive">
 
-			<table class="table table-striped table-bordered table-hover" data-source="{{ URL::to('source') }}" data-grid-section="results" data-grid="standard">
+			<table class="table table-striped table-bordered table-hover" data-grid-source="{{ URL::to('source') }}" data-grid-section="results" data-grid="standard">
 
 				<thead>
 					<tr>

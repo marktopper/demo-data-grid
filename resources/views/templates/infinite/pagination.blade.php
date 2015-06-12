@@ -4,7 +4,7 @@
 
 		<% _.each(pagination, function(p) { %>
 
-			<a href="#" class="goto-page" data-grid="infinite" data-page="<%= p.page %>">
+			<a href="#" class="goto-page" data-grid="infinite" data-grid-page="<%= p.page %>">
 				Load More
 			</a>
 

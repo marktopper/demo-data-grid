@@ -13,17 +13,18 @@ Infinite
 {{-- Inline scripts --}}
 @section('scripts')
 <script>
-$(function()
-{
+$(function() {
+
 	// Setup DataGrid
-	var grid = $.datagrid('infinite', '.infinite', '#pagination', '.applied-filters',
-	{
+	var grid = $.datagrid('infinite', {
+        pagination: {
+            method: 'infinite'
+            // infinite_scroll: true, // Optional, will auto load more results on scroll
+            // scroll_offset: 1000,   // Optional, defaults to 400 from bottom
+        },
 		loader: '.loader',
-		method: 'infinite',
-		// infinite_scroll: true, // Optional, will auto load more results on scroll
-		// scroll_offset: 1000,   // Optional, defaults to 400 from bottom
 		throttle: 21,
-		sort: {
+		sorting: {
 			column: 'city',
 			direction: 'asc'
 		}
@@ -43,7 +44,7 @@ $(function()
 
 	<div class="col-md-12">
 
-		<form data-search data-grid="infinite" class="search">
+		<form data-grid-search data-grid="infinite" class="search">
 
 			<input type="text" name="filter" placeholder="Filter All" class="search-input">
 
@@ -65,7 +66,7 @@ $(function()
 
 	<div class="col-md-12">
 
-		<div class="applied-filters" data-grid="infinite"></div>
+		<div class="applied-filters" data-grid="infinite" data-grid-section="filters"></div>
 
 	</div>
 
@@ -75,13 +76,13 @@ $(function()
 
 	<div class="col-md-12">
 
-		<ul class="infinite grid cf" data-source="{{ URL::to('source') }}" data-grid="infinite"></ul>
+		<ul class="infinite grid cf" data-grid-source="{{ URL::to('source') }}" data-grid="infinite" data-grid-section="results"></ul>
 
 	</div>
 
 </div>
 
-<footer id="pagination" class="row" data-grid="infinite"></footer>
+<footer id="pagination" class="row" data-grid="infinite" data-grid-section="pagination"></footer>
 
 @include('templates/infinite/results')
 @include('templates/infinite/pagination')

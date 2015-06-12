@@ -21,11 +21,14 @@ $(function()
 {
 	// Setup DataGrid
     var grid = $.datagrid('standard', {
-        multiple: false,
-        throttle: 20,
-        loader: '.loader',
-        pushstate: true,
-        root: '/semantic'
+        pagination: {
+            throttle: 20
+        },
+        url: {
+            semantic: true,
+            base: '/semantic'
+        },
+        loader: '.loader'
     }).on('dg:applying', function(filter) {
         console.log(this, filter);
     });
@@ -116,9 +119,15 @@ $(function()
 
 		<div class="form-group">
 
-			<div class="input-group datePicker" data-grid="standard">
+			<div class="input-group datePicker" data-grid="standard"
+                 data-grid-filter="created"
+                 data-grid-type="range"
+                 data-grid-query="created"
+                 data-grid-range="start"
+                 data-grid-label="Created At"
+                 data-grid-date-format>
 
-				<input type="text" data-format="DD MMM, YYYY" data-grid-filter="created" data-grid-type="range" data-grid-date-format="DD MMM, YYYY" disabled class="form-control" data-grid-range="start" data-label="Created At" placeholder="Start Date">
+                <input type="text" data-format="DD MMM, YYYY" disabled class="form-control" placeholder="Start Date">
 
 				<span class="input-group-addon" style="cursor: pointer;"><i class="fa fa-calendar"></i></span>
 
@@ -133,9 +142,16 @@ $(function()
 
 		<div class="form-group">
 
-			<div class="input-group datePicker" data-grid="standard" data-range-filter>
+			<div class="input-group datePicker" data-grid="standard"
+                 data-grid-filter="created"
+                 data-grid-type="range"
+                 data-grid-query="created:2015-06-12"
+                 data-grid-range="end"
+                 data-grid-label="Created At"
+                 data-grid-date-format="YYYY-MM-DD">
 
-                <input type="text" data-format="DD MMM, YYYY" data-grid-filter="created" data-grid-type="range" data-grid-date-format="DD MMM, YYYY" disabled class="form-control" data-grid-range="end" data-label="Created At" placeholder="End Date">
+                <input type="text" data-format="DD MMM, YYYY" disabled
+                       class="form-control" placeholder="End Date">
 
 				<span class="input-group-addon" style="cursor: pointer;"><i class="fa fa-calendar"></i></span>
 
@@ -207,7 +223,7 @@ $(function()
 
 		<div class="table-responsive">
 
-			<table class="table table-striped table-bordered table-hover" data-source="{{ URL::to('source') }}" data-grid-section="results" data-grid="standard">
+			<table class="table table-striped table-bordered table-hover" data-grid-source="{{ URL::to('source') }}" data-grid-section="results" data-grid="standard">
 
 				<thead>
 					<tr>

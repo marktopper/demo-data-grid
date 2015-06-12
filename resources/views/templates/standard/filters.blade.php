@@ -4,15 +4,15 @@
 
 		<button class="btn btn-default" data-grid-reset-filter="<%= f.name %>">
 
-			<% if (f.from !== undefined && f.to !== undefined) { %>
+			<% if (f.query.from !== undefined && f.query.to !== undefined) { %>
 
-				<% if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/g.test(f.from) && /[0-9]{4}-[0-9]{2}-[0-9]{2}/g.test(f.to)) { %>
+				<% if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/g.test(f.query.from) && /[0-9]{4}-[0-9]{2}-[0-9]{2}/g.test(f.query.to)) { %>
 
-					<%- f.label %> <em><%- moment(f.from).format('MMM DD, YYYY') %> - <%- moment(f.to).format('MMM DD, YYYY') %></em>
+					<%- f.label %> <em><%- moment(f.query.from).format('MMM DD, YYYY') %> - <%- moment(f.query.to).format('MMM DD, YYYY') %></em>
 
 				<% } else { %>
 
-					<%- f.label %> <em><%- f.from %> - <%- f.to %></em>
+					<%- f.label %> <em><%- f.query.from %> - <%- f.query.to %></em>
 
 				<% } %>
 

@@ -12,11 +12,11 @@
 
 		 	if (p.page === i) { %>
 
-			<li class="active"><a><%= start %> - <%= end %></span></a></li>
+			<li class="active"><a><%= start %> - <%= end %></a></li>
 
 			<% } else { %>
 
-			<li><a href="#" data-grid="standard" data-page="<%= i %>"><%= start %> - <%= end %></a></li>
+			<li><a href="#" data-grid="standard" data-grid-page="<%= i %>"><%= start %> - <%= end %></a></li>
 
 			<% } %>
 

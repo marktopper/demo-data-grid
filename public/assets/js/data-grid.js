@@ -20,7 +20,6 @@
 {
     'use strict';
 
-
     // Workaround for utf-8 params issue in Safari
     // TODO Fix Chrome encoded uri ugliness
     Backbone.History.prototype.decodeFragment = function(fragment) {
@@ -33,42 +32,73 @@
      * @var array
      */
     var defaults = {
+
         source: null,
-        threshold: null,
-        throttle: null,
-        method: 'single',
-        multiple: true,
-        sort: {},
-        sort_classes: {
-            asc: 'asc',
-            desc: 'desc'
+
+        multiple: false,
+        prefetched: false,
+
+        pagination: {
+            method: 'single',
+            threshold: null,
+            throttle: null,
+            scroll: null,
+
+            infinite_scroll: false,
+            scroll_offset: undefined
         },
+
+        sorting: {
+            //column: undefined,
+            //direction: undefined,
+            asc_class: 'asc',
+            desc_class: 'desc'
+        },
+
         delimiter: {
             query: ';',
             expression: ':'
         },
+
         sections: {
             results: '[data-grid-section="results"]',
             filters: '[data-grid-section="filters"]',
             pagination: '[data-grid-section="pagination"]'
         },
+
         template_settings: {
             evaluate    : /<%([\s\S]+?)%>/g,
             interpolate : /<%=([\s\S]+?)%>/g,
             escape      : /<%-([\s\S]+?)%>/g
         },
+
         filters: {},
-        live_search: true,
-        scroll: null,
-        search_timeout: 800,
-        hash: true,
-        pushstate: false,
-        root: '',
+
+        search: {
+            live: true,
+            timeout: 800
+        },
+
+        url: {
+            hash: true,
+            semantic: false,
+            base: ''
+        },
+
+        //loader: {
+        //    selector: undefined,
+        //    loading_class: undefined,
+        //    loaded_class: undefined
+        //},
+
         loader: undefined,
         loader_class: undefined,
-        db_timestamp_format: 'YYYY-MM-DD HH:mm:ss',
-        db_date_format: 'YYYY-MM-DD',
-        prefetched: false,
+
+        formats: {
+            timestamp: 'YYYY-MM-DD HH:mm:ss',
+            date: 'YYYY-MM-DD'
+        },
+
         callback: undefined
     };
 
@@ -78,7 +108,11 @@
         this.grid = '[data-grid="' + grid + '"]';
 
         // Options
-        this.opt = $.extend({}, defaults, options);
+        this.opt = _.extend({}, defaults);
+
+        _.each(_.keys(options), $.proxy(function(key) {
+            this.opt[key] = _.defaults(options[key], defaults[key]);
+        }, this));
 
         this.applied_filters = [];
 
@@ -103,7 +137,7 @@
         };
 
         // Setup Base Throttle
-        this.pagination.base_throttle = this.opt.throttle;
+        this.pagination.base_throttle = this.opt.pagination.throttle;
 
         var sections = this.opt.sections;
 
@@ -114,7 +148,7 @@
         this.$body       = $(document.body);
 
         // Source
-        this.source = this.$results.data('source') || this.opt.source;
+        this.source = this.$results.data('grid-source') || this.opt.source;
 
         // Safety Check
         if (this.$results.get(0).tagName.toLowerCase() === 'table') {
@@ -127,16 +161,6 @@
         this._checkDependencies();
 
         this.backbone = Backbone.noConflict();
-
-        var router = this.backbone.Router.extend({
-            routes: {
-                '*path': 'defaultRoute'
-            },
-
-            defaultRoute: $.proxy(this.onRouteDispatch, this)
-        });
-
-        this.router = new router();
 
         // Initialize Data Grid
         // _.defer is needed to catch chained listeners before the first events are triggered
@@ -153,31 +177,21 @@
          * @return void
          */
         init: function () {
+            this.initTemplates();
             this.listeners();
             this.initRouter();
         },
 
-        /**
-         * Checks the Data Grid dependencies.
-         *
-         * @return void
-         */
-        _checkDependencies: function () {
-
-            if (typeof window._ === 'undefined') {
-                throw new Error('Underscore is not defined. DataGrid Requires UnderscoreJS v1.6.0 or later to run!');
-            }
-
-            var grid = this.grid;
+        initTemplates: function() {
 
             // Set _ templates interpolate
             _.templateSettings = this.opt.template_settings;
 
-            var results_template       = $('[data-template="results"]' + grid).html();
-            var pagination_template    = $('[data-template="pagination"]' + grid).html();
-            var filters_template       = $('[data-template="filters"]' + grid).html();
-            var empty_results_template = $('[data-template="no_results"]' + grid).html();
-            var empty_filters_template = $('[data-template="no_filters"]' + grid).html();
+            var results_template       = $('[data-template="results"]' + this.grid).html(),
+                pagination_template    = $('[data-template="pagination"]' + this.grid).html(),
+                filters_template       = $('[data-template="filters"]' + this.grid).html(),
+                empty_results_template = $('[data-template="no_results"]' + this.grid).html(),
+                empty_filters_template = $('[data-template="no_filters"]' + this.grid).html();
 
             if (results_template === undefined) {
                 console.error('results template not found.');
@@ -211,6 +225,49 @@
             };
         },
 
+        initRouter: function() {
+
+            var routerOptions   = {},
+                router          = this.backbone.Router.extend({
+                    routes: {
+                        '*path': 'defaultRoute'
+                    },
+
+                    defaultRoute: $.proxy(this.onRouteDispatch, this)
+                });
+
+            if (this.opt.url.semantic) {
+                routerOptions = {
+                    root: this.opt.url.base,
+                    pushState: true
+                };
+            }
+
+            if (this.opt.url.hash) {
+                $(this).on('dg:hashchange', $.proxy(this.pushHash, this));
+            }
+
+            this.router = new router();
+            this.backbone.history.start(routerOptions);
+        },
+
+
+        /**
+         * Checks the Data Grid dependencies.
+         *
+         * @return void
+         */
+        _checkDependencies: function () {
+
+            if (typeof window._ === 'undefined') {
+                throw new Error('Underscore is not defined. DataGrid Requires UnderscoreJS v1.6.0 or later to run!');
+            }
+
+            if (typeof Backbone === 'undefined') {
+                throw new Error('DataGrid Requires Backbone.js v1.2.1 or later to run!');
+            }
+        },
+
         /**
          * jQuery.on wrapper for dg:event callbacks
          *
@@ -218,6 +275,17 @@
          * @param callback
          */
         on: function(event, callback) {
+
+            if (_.isObject(event)) {
+                this.callbackListeners(event);
+            } else {
+                this.bindCallback(event, callback);
+            }
+
+            return this;
+        },
+
+        bindCallback: function(event, callback) {
             $(this).on(event, $.proxy(function() {
                 callback.apply(this, _.rest(arguments));
             }, this));
@@ -234,13 +302,16 @@
                     var term_selector = '[data-grid-filter]' + this.grid + ':not([data-grid-type="range"]),' + this.grid + ' [data-grid-filter]:not([data-grid-type="range"])';
 
                     this.$body.on('click', term_selector, $.proxy(this.filter_types.term._onFilter, this));
-                    this.$body.on('change', 'select[data-grid-group]' + this.grid + ',' + this.grid + ' select[data-grid-group]', $.proxy(this._onSelectFilter, this));
+
+                    // TODO Fix term select event handler
+                    this.$body.find('select[data-grid-group]' + this.grid + ',' + this.grid + ' select[data-grid-group]').on('change', $.proxy(this._onSelectFilter, this));
                 },
 
                 extract: function(fragment) {
 
                     var $filter = $('[data-grid-filter="' + fragment + '"]' + this.grid + ',' + this.grid + ' [data-grid-filter="' + fragment + '"]');
 
+                    // TODO Find out what to do in case we have filter preset, but no filter element
                     if (!_.has(this.opt.filters, fragment) && !$filter.length) {
                         return;
                     }
@@ -285,7 +356,7 @@
 
                     this.applyScroll();
 
-                    if (this.opt.method === 'infinite') {
+                    if (this.opt.pagination.method === 'infinite') {
                         this.$results.empty();
                         this.pagination.page_index = 1;
                     }
@@ -317,6 +388,8 @@
 
                     refresh = refresh !== undefined ? refresh : true;
 
+                    this.removeFilter.call($filter.data('grid-filter'));
+
                     this.resetBeforeApply($filter);
 
                     if (!$filter.data('grid-filter')) {
@@ -333,7 +406,6 @@
                         this.goToPage(1);
                         this.refresh();
                     }
-
                 },
 
                 _apply: function($filter) {
@@ -390,26 +462,166 @@
             },
 
             range: {
+
                 listeners: function() {
-                    var rangeSelector = '[data-grid-filter][data-grid-type="range"]' + this.grid + ',' + this.grid + ' [data-grid-filter][data-grid-type="range"]'
-                    this.$body.on('click', rangeSelector, $.proxy(this.filter_types.range._onRange, this));
+                    var rangeSelector = '[data-grid-type="range"]' + this.grid + ',' + this.grid + ' [data-grid-type="range"]';
+
+                    this.$body.on('change', rangeSelector, $.proxy(this.filter_types.range._onRangeChange, this));
                 },
 
                 extract: function(fragment) {
 
+                    var delimiter   = this.opt.delimiter.expression,
+                        query       = fragment.split(delimiter),
+                        name        = query[0],
+                        from        = query[1],
+                        to          = query[2],
+                        $filter     = $('[data-grid-filter="' + name + '"]' + this.grid + ',' + this.grid + ' [data-grid-filter="' + name + '"]');
+
+                    if (!$filter.length || $filter.data('grid-type') !== 'range') {
+                        return;
+                    }
+
+                    if (_.isUndefined($filter.data('grid-range'))) {
+                        $filter.data('grid-query', [name, delimiter, from, delimiter, to].join(''));
+                    } else {
+                        var $from   = this.$body.find('[data-grid-filter="' + name + '"][data-grid-range="start"]' + this.grid + ',' + this.grid + ' [data-grid-filter="' + name + '"][data-grid-range="start"]'),
+                            $to     = this.$body.find('[data-grid-filter="' + name + '"][data-grid-range="end"]' + this.grid + ',' + this.grid + ' [data-grid-filter="' + name + '"][data-grid-range="end"]');
+
+                        if ($from.is(':input')) {
+                            $from.val(from);
+                        } else {
+                            $from.find(':input:first').val(from);
+                        }
+
+                        if ($to.is(':input')) {
+                            $to.val(to);
+                        } else {
+                            $to.find(':input:first').val(to);
+                        }
+                    }
+
+                    this.filter_types.range.apply.call(this, $filter, false);
+                    return true;
                 },
 
                 buildFragment: function(filter) {
-                    return ['/', filter.name, this.opt.delimiter.expression, filter.from, this.opt.delimiter.expression, filter.to].join('');
+                    return [filter.name, this.opt.delimiter.expression, filter.query.from, this.opt.delimiter.expression, filter.query.to].join('');
                 },
 
                 buildParams: function(filter) {
 
+                    var f = {}, q = filter.query;
+
+                    f[q.column] = ['|', '>=', q.from, '|', '<=', q.to, '|'].join('');
+                    return f;
                 },
 
                 _onRange: function(e) {
-                    // TODO Extract range filter
+
+                    e.preventDefault();
+
+                    var $filter = $(e.currentTarget),
+                        type = $filter.data('grid-type') || 'range';
+
+                    if (type !== 'range' || !_.isUndefined($filter.data('grid-range'))) {
+                        return;
+                    }
+
+                    if (this.opt.pagination.method === 'infinite') {
+                        this.$results.empty();
+                        this.pagination.page_index = 1;
+                    }
+
+                    this.filter_types.range.apply.call(this, $filter);
+                },
+
+                _onRangeChange: function(e) {
+
+                    e.preventDefault();
+
+                    var $filter = $(e.currentTarget),
+                        type = $filter.data('grid-type');
+
+                    if (type !== 'range') {
+                        return;
+                    }
+
+                    if (this.opt.pagination.method === 'infinite') {
+                        this.$results.empty();
+                        this.pagination.page_index = 1;
+                    }
+
+                    this.filter_types.range.apply.call(this, $filter);
+                },
+
+                /**
+                 * Extracts range filters from element.
+                 *
+                 * @param  $filter  object
+                 * @param  refresh  bool
+                 * @return void
+                 */
+                apply: function($filter, refresh) {
+
+                    refresh = refresh !== undefined ? refresh : true;
+
+                    var name        = $filter.data('grid-filter'),
+                        label       = $filter.data('grid-label'),
+                        delimiter   = this.opt.delimiter.expression,
+                        query, column, from, to;
+
+                    if (_.isUndefined($filter.data('grid-range'))) {
+                        // Extract single element range (slider or button)
+                        query   = $filter.data('grid-query').split(delimiter);
+                        column  = query[0];
+                        from    = query[1];
+                        to      = query[2];
+                    } else {
+
+                        // Extract double element range (datepickers)
+                        var $from       = this.$body.find('[data-grid-filter="' + name + '"][data-grid-range="start"]' + this.grid + ',' + this.grid + ' [data-grid-filter="' + name + '"][data-grid-range="start"]'),
+                            $to         = this.$body.find('[data-grid-filter="' + name + '"][data-grid-range="end"]' + this.grid + ',' + this.grid + ' [data-grid-filter="' + name + '"][data-grid-range="end"]');
+
+                            column      = $from.data('grid-query').split(delimiter)[0];
+                            from        = $from.is(':input') ? $from.val() : $from.find(':input:first').val() || $from.data('grid-query').split(delimiter)[1];
+                            to          = $to.is(':input') ? $to.val() : $to.find(':input:first').val() || $to.data('grid-query').split(delimiter)[1];
+                    }
+
+                    if (_.isEmpty(from) || _.isEmpty(to)) {
+                        return;
+                    }
+
+                    this.removeFilter(name);
+
+                    var date_format = _.isUndefined($filter.attr('data-grid-date-format')) ?
+                        null : $filter.data('grid-date-format') || this.opt.formats.date;
+
+                    if (date_format && window.moment) {
+                        from = moment(from).format(date_format);
+                        to   = moment(to).format(date_format);
+                    }
+
+                    var filter = {
+                        name: name,
+                        type: 'range',
+                        label: label,
+                        default: _.isUndefined($filter.data('grid-filter-default')) ? false : true,
+                        query: {
+                            column: column,
+                            from: from,
+                            to: to
+                        }
+                    };
+
+                    this.applyFilter(filter);
+
+                    if (refresh) {
+                        this.goToPage(1);
+                        this.refresh();
+                    }
                 }
+
             },
 
             search: {
@@ -452,6 +664,7 @@
                     }
 
                     this.applyFilter(filter);
+                    return true;
                 },
 
                 buildFragment: function (filter) {
@@ -523,7 +736,7 @@
                     };
 
                     // Clear results for infinite grids
-                    if (this.opt.method === 'infinite') {
+                    if (this.opt.pagination.method === 'infinite') {
                         this.$results.empty();
                     }
 
@@ -540,14 +753,14 @@
             live: {
 
                 listeners: function() {
-                    if (this.opt.live_search) {
+                    if (this.opt.search.live) {
                         this.$body.on('keyup', '[data-grid-search]' + this.grid + ',' + this.grid + ' ' + '[data-grid-search]', $.proxy(this.filter_types.live._onLiveSearch, this));
                     }
                 },
 
-                extract: $.noop,
+                extract: _.noop,
 
-                buildFragment: $.noop,
+                buildFragment: _.noop,
 
                 buildParams: function(filter) {
                     return this.filter_types.search.buildParams.call(this, filter);
@@ -615,7 +828,7 @@
                         $input.data('old', value);
 
                         // Clear results for infinite grids
-                        if (this.opt.method === 'infinite') {
+                        if (this.opt.pagination.method === 'infinite') {
                             this.$results.empty();
                         }
 
@@ -623,7 +836,7 @@
 
                         this.goToPage(1);
                         this.refresh();
-                    }, this, $form), this.opt.search_timeout);
+                    }, this, $form), this.opt.search.timeout);
                 }
             }
         },
@@ -645,10 +858,14 @@
          *
          * @return void
          */
-        callbackListeners: function() {
+        callbackListeners: function(events) {
 
-            _.each(_.keys(this.opt.events), $.proxy(function(event) {
-                this.on(event, this.opt.events[event]);
+            if (_.isEmpty(events)) {
+                return;
+            }
+
+            _.each(_.keys(events), $.proxy(function(event) {
+                this.bindCallback(event, events[event]);
             }, this));
         },
 
@@ -659,15 +876,15 @@
          */
         listeners: function() {
 
-            var grid    = this.grid
+            var grid = this.grid;
 
-            $(this).on('dg:update', this.fetchResults);
+            $(this).on('dg:update', $.proxy(this.fetchResults, this));
 
             // TODO document-wide filter reset handlers
             //this.$body.on('click', '[data-grid-reset]' + grid + ':not([data-grid-filter]):not([data-grid-group]),' + grid + ' [data-grid-reset]:not([data-grid-filter]):not([data-grid-group])', $.proxy(this.onReset, this));
 
             this.filterListeners();
-            this.callbackListeners();
+            this.callbackListeners(this.opt.events);
 
             this.$filters.on('click', '[data-grid-reset-filter]', $.proxy(this.onFilterUnapply, this));
 
@@ -676,9 +893,9 @@
             this.$pagination.on('click', '[data-grid-throttle]', $.proxy(this.onThrottle, this));
             this.$body.on('click', '[data-grid-download]', $.proxy(this.onDownload, this));
 
-            if (this.opt.infinite_scroll && this.opt.method === 'infinite') {
+            if (this.opt.pagination.infinite_scroll && this.opt.pagination.method === 'infinite') {
 
-                var offset = this.opt.scroll_offset || 400;
+                var offset = this.opt.pagination.scroll_offset || 400;
                 var throttled = _.throttle($.proxy(function() {
                     if ($(window).scrollTop() >= $(document).height() - $(window).height() - offset) {
                         var page = this.pagination.page_index + 1;
@@ -694,23 +911,6 @@
             }
         },
 
-        initRouter: function() {
-            var routerOptions = {};
-
-            if (this.opt.pushstate) {
-                routerOptions = {
-                    root: this.opt.root,
-                    pushState:true
-                };
-            }
-
-            if (this.opt.hash) {
-                $(this).on('dg:hashchange', this.pushHash);
-            }
-
-            this.backbone.history.start(routerOptions);
-        },
-
         onRouteDispatch: function(path) {
 
             var route_array = path ? path.split('/') : [];
@@ -719,7 +919,6 @@
                 this.applyDefaults();
                 this.initial = false;
 
-                // TODO Decide whether defaults should be applied to view and hash on pref
                 if (this.opt.prefetched) {
                     this.opt.prefetched = false;
                     return;
@@ -770,7 +969,7 @@
 
             this.removeFilter(name);
 
-            if (this.opt.method === 'infinite') {
+            if (this.opt.pagination.method === 'infinite') {
                 this.$results.empty();
             }
 
@@ -787,7 +986,7 @@
             e.preventDefault();
             var elem = $(e.currentTarget);
 
-            if (this.opt.method === 'infinite') {
+            if (this.opt.pagination.method === 'infinite') {
                 this.$results.empty();
             }
 
@@ -823,7 +1022,7 @@
 
             e.preventDefault();
 
-            this.opt.throttle += this.pagination.base_throttle;
+            this.opt.pagination.throttle += this.pagination.base_throttle;
             this.refresh();
         },
 
@@ -908,7 +1107,7 @@
                     parsed_route = parsed_route.splice(0, (parsed_route.length - 1));
                 } else if (sort_column && sort_direction) {
                     // Convert sort to string
-                    var str = [options.sort.column, options.delimiter.expression, options.sort.direction].join('');
+                    var str = [options.sorting.column, options.delimiter.expression, options.sorting.direction].join('');
                     this.extractSortsFromRoute(str);
                 } else {
                     this.current_sort.direction = '';
@@ -931,7 +1130,7 @@
 
             if (this.opt.multiple && current_hash.indexOf(this.key) === -1) {
                 if (sort_column && sort_direction) {
-                    var str = options.sort.column + options.delimiter.expression + options.sort.direction;
+                    var str = options.sorting.column + options.delimiter.expression + options.sorting.direction;
                     this.extractSortsFromRoute(str);
                 }
             }
@@ -1153,7 +1352,7 @@
 
             var index;
 
-            if (this.opt.method === 'infinite') {
+            if (this.opt.pagination.method === 'infinite') {
                 index = $el.data('grid-page');
                 $el.data('grid-page', ++index);
             } else {
@@ -1189,8 +1388,8 @@
             var grid        = this.grid,
                 options     = this.opt,
                 $sorts      = $('[data-grid-sort]' + grid + ',' + grid + ' [data-grid-sort]'),
-                ascClass    = options.sort_classes.asc,
-                descClass   = options.sort_classes.desc,
+                ascClass    = options.sorting.asc_class,
+                descClass   = options.sorting.desc_class,
                 remove      = direction === 'asc' ? descClass : ascClass,
                 add         = direction === 'asc' ? ascClass : descClass;
 
@@ -1272,11 +1471,11 @@
                 direction  = 'asc';
 
             // Reset page for infinite grids
-            if (this.opt.method === 'infinite') {
+            if (this.opt.pagination.method === 'infinite') {
                 this.goToPage(1);
             }
 
-            if (this.current_sort.column === sort_array[0] && this.current_sort.index < 3 && this.current_sort.column !== this.opt.sort.column) {
+            if (this.current_sort.column === sort_array[0] && this.current_sort.index < 3 && this.current_sort.column !== this.opt.sorting.column) {
                 this.current_sort.index++;
             } else {
                 if (sort_array[0] !== this.default_column && this.default_column !== '') {
@@ -1424,8 +1623,8 @@
                 direction       = this.current_sort.direction,
                 delimiter       = this.opt.delimiter.expression;
 
-            if (!!column && !!direction) {
-                if (column !== this.opt.sort.column || direction !== this.opt.sort.direction) {
+            if (!_.isEmpty(column) && !_.isEmpty(direction)) {
+                if (column !== this.opt.sorting.column || direction !== this.opt.sorting.direction) {
                     return [column, delimiter, direction].join('');
                 }
             }
@@ -1438,7 +1637,7 @@
          */
         buildPageFragment: function() {
 
-            if (this.pagination.page_index > 1 && this.opt.method !== 'infinite') {
+            if (this.pagination.page_index > 1 && this.opt.pagination.method !== 'infinite') {
                 return ['page', this.opt.delimiter.expression, this.pagination.page_index].join('');
             }
         },
@@ -1450,8 +1649,8 @@
          */
         buildThrottleFragment: function() {
 
-            if (defaults.throttle !== this.opt.throttle && this.opt.throttle) {
-                return ['throttle', this.opt.delimiter.expression, this.opt.throttle].join('');
+            if (defaults.pagination.throttle !== this.opt.pagination.throttle && this.opt.pagination.throttle) {
+                return ['throttle', this.opt.delimiter.expression, this.opt.pagination.throttle].join('');
             }
         },
 
@@ -1462,8 +1661,8 @@
          */
         buildThresholdFragment: function() {
 
-            if (defaults.threshold !== this.opt.threshold && this.opt.threshold) {
-                return ['threshold', this.opt.delimiter.expression, this.opt.threshold].join('');
+            if (defaults.pagination.threshold !== this.opt.pagination.threshold && this.opt.pagination.threshold) {
+                return ['threshold', this.opt.delimiter.expression, this.opt.pagination.threshold].join('');
             }
         },
 
@@ -1485,12 +1684,12 @@
             })
                 .done($.proxy(function(response) {
 
-                    if (!this.opt.throttle) {
-                        defaults.throttle = response.throttle;
+                    if (!this.opt.pagination.throttle) {
+                        defaults.pagination.throttle = response.throttle;
                     }
 
-                    if (!this.opt.threshold) {
-                        defaults.threshold = response.threshold;
+                    if (!this.opt.pagination.threshold) {
+                        defaults.pagination.threshold = response.threshold;
                     }
 
                     if (this.pagination.page_index > response.pages) {
@@ -1504,11 +1703,7 @@
                     this.pagination.total = response.total;
 
                     // Keep infinite results to append load more
-                    if (this.opt.method !== 'infinite') {
-                        this.$results.empty();
-                    }
-
-                    if (this.opt.method === 'single' || this.opt.method === 'group') {
+                    if (this.opt.pagination.method !== 'infinite') {
                         this.$results.html(this.tmpl.results(response));
                     } else {
                         this.$results.append(this.tmpl.results(response));
@@ -1528,19 +1723,19 @@
 
                     if (response.sort !== '') {
 
-                        var sortEl = $('[data-grid-sort^="' + response.sort + '"]' + this.grid + ',' + this.grid + ' [data-grid-sort^="' + response.sort + '"]');
+                        var $sort = $('[data-grid-sort^="' + response.sort + '"]' + this.grid + ',' + this.grid + ' [data-grid-sort^="' + response.sort + '"]');
 
                         if (this.buildSortFragment()) {
                             this.current_sort.column = response.sort;
                             this.current_sort.direction = response.direction;
                         }
 
-                        if (this.opt.sort.column === undefined) {
+                        if (_.isEmpty(this.opt.sorting.column)) {
                             this.default_column = response.default_column;
                             this.default_direction = response.direction;
                         }
 
-                        this.setSortDirection(sortEl, response.direction);
+                        this.setSortDirection($sort, response.direction);
                     }
 
                     this.hideLoader();
@@ -1573,15 +1768,15 @@
             var params = {
                 filters: [],
                 page: this.pagination.page_index,
-                method: this.opt.method
+                method: this.opt.pagination.method
             };
 
-            if (this.opt.threshold) {
-                params.threshold = this.opt.threshold ? this.opt.threshold : defaults.threshold;
+            if (this.opt.pagination.threshold) {
+                params.threshold = this.opt.pagination.threshold ? this.opt.pagination.threshold : defaults.pagination.threshold;
             }
 
-            if (this.opt.throttle) {
-                params.throttle = this.opt.throttle ? this.opt.throttle : defaults.throttle;
+            if (this.opt.pagination.throttle) {
+                params.throttle = this.opt.pagination.throttle ? this.opt.pagination.throttle : defaults.pagination.throttle;
             }
 
             _.each(this.applied_filters, $.proxy(function(index) {
@@ -1590,12 +1785,12 @@
                 }
             }, this));
 
-            if (this.current_sort.column !== '' && this.current_sort.direction !== '') {
+            if (!_.isEmpty(this.current_sort.column) && !_.isEmpty(this.current_sort.direction)) {
                 params.sort = this.current_sort.column;
                 params.direction = this.current_sort.direction;
-            } else if (this.opt.sort.column !== undefined && this.opt.sort.direction !== undefined) {
-                params.sort = this.opt.sort.column;
-                params.direction = this.opt.sort.direction;
+            } else if (!_.isEmpty(this.opt.sorting.column) && !_.isEmpty(this.opt.sorting.direction)) {
+                params.sort = this.opt.sorting.column;
+                params.direction = this.opt.sorting.direction;
             }
 
             if (download) {
@@ -1618,7 +1813,7 @@
                 prev  = json.previous_page,
                 total = json.pages;
 
-            switch (this.opt.method) {
+            switch (this.opt.pagination.method) {
                 case 'single':
                 case 'group':
                     return this.buildRegularPagination(page, next, prev, total);
@@ -1642,7 +1837,7 @@
 
             per_page = this.calculatePagination();
 
-            if (this.opt.threshold > this.pagination.filtered) {
+            if (this.opt.pagination.threshold > this.pagination.filtered) {
                 page_limit = this.pagination.filtered;
             } else if (this.pagination.page_index === 1) {
                 page_limit = per_page > this.pagination.filtered ? this.pagination.filtered : per_page;
@@ -1660,8 +1855,8 @@
                 pages: total,
                 total: this.pagination.total,
                 filtered: this.pagination.filtered,
-                throttle: this.opt.throttle ? this.opt.throttle : defaults.throttle,
-                threshold: this.opt.threshold ? this.opt.threshold : defaults.threshold,
+                throttle: this.opt.pagination.throttle ? this.opt.pagination.throttle : defaults.pagination.throttle,
+                threshold: this.opt.pagination.threshold ? this.opt.pagination.threshold : defaults.pagination.threshold,
                 per_page: per_page
             };
 
@@ -1702,12 +1897,12 @@
          */
         calculatePagination: function() {
 
-            switch (this.opt.method) {
+            switch (this.opt.pagination.method) {
                 case 'single':
                 case 'infinite':
-                    return this.opt.throttle ? this.opt.throttle : defaults.throttle;
+                    return this.opt.pagination.throttle ? this.opt.pagination.throttle : defaults.pagination.throttle;
                 case 'group':
-                    return Math.ceil(this.pagination.filtered / (this.opt.throttle ? this.opt.throttle : defaults.throttle));
+                    return Math.ceil(this.pagination.filtered / (this.opt.pagination.throttle ? this.opt.pagination.throttle : defaults.pagination.throttle));
             }
         },
 
@@ -1718,14 +1913,15 @@
          */
         showLoader: function() {
 
-            var grid   = this.grid,
-                loader = this.opt.loader;
+            var grid    = this.grid,
+                loader  = this.opt.loader,
+                $loader = this.$body.find(grid + loader + ',' + grid + ' ' + loader);
 
             if (this.opt.loader_class) {
-                this.$body.find(grid + loader + ',' + grid + ' ' + loader).addClass(this.opt.loader_class);
+                $loader.addClass(this.opt.loader_class);
             }
 
-            this.$body.find(grid + loader + ',' + grid + ' ' + loader).finish();
+            $loader.finish().fadeIn();
         },
 
         /**
@@ -1735,14 +1931,15 @@
          */
         hideLoader: function() {
 
-            var grid   = this.grid,
-                loader = this.opt.loader;
+            var grid    = this.grid,
+                loader  = this.opt.loader,
+                $loader = this.$body.find(grid + loader + ',' + grid + ' ' + loader);
 
             if (this.opt.loader_class) {
-                this.$body.find(grid + loader + ',' + grid + ' ' + loader).removeClass(this.opt.loader_class);
+                $loader.removeClass(this.opt.loader_class);
             }
 
-            this.$body.find(grid + loader + ',' + grid + ' ' + loader).finish();
+            $loader.finish().fadeOut();
         },
 
         /**
@@ -1757,7 +1954,7 @@
                 $search = this.$body.find('[data-grid-search]'+ grid);
 
             // Elements
-            this.$body.find('[data-grid-sort]'+ grid).removeClass(options.sort_classes.asc).removeClass(options.sort_classes.desc);
+            this.$body.find('[data-grid-sort]'+ grid).removeClass(options.sorting.asc_class).removeClass(options.sorting.asc_class);
             $search.find('input').val('');
             $search.find('select').prop('selectedIndex', 0);
             this.$body.find('select[data-grid-group]' + grid + ',' + grid +' select[data-grid-group]').find(':eq(0)').prop('selected', true);
@@ -1776,7 +1973,7 @@
             // Remove all rendered content
             this.$filters.html(this.tmpl.empty_filters());
 
-            if (this.opt.method === 'infinite') {
+            if (this.opt.pagination.method === 'infinite') {
                 this.$results.empty();
             }
         },
@@ -1811,7 +2008,7 @@
          */
         applyScroll: function() {
 
-            var _scroll = this.opt.scroll;
+            var _scroll = this.opt.pagination.scroll;
 
             if ($.isFunction(_scroll)) {
                 _scroll();
@@ -1843,7 +2040,7 @@
          * @return void
          */
         setScroll: function(element) {
-            this.opt.scroll = element;
+            this.opt.pagination.scroll = element;
         },
 
         /**
@@ -1852,7 +2049,7 @@
          * @return int
          */
         getThrottle: function() {
-            return this.opt.throttle;
+            return this.opt.pagination.throttle;
         },
 
         /**
@@ -1862,7 +2059,7 @@
          * @return void
          */
         setThrottle: function(value) {
-            this.opt.throttle = value;
+            this.opt.pagination.throttle = value;
         },
 
         /**
@@ -1871,7 +2068,7 @@
          * @return int
          */
         getThreshold: function() {
-            return this.opt.threshold;
+            return this.opt.pagination.threshold;
         },
 
         /**
@@ -1881,7 +2078,7 @@
          * @return void
          */
         setThreshold: function(value) {
-            this.opt.threshold = value;
+            this.opt.pagination.threshold = value;
         }
     };
 

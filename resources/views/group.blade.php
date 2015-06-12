@@ -13,16 +13,16 @@ group
 {{-- Inline scripts --}}
 @section('scripts')
 <script>
-	$(function()
-	{
+$(function() {
 	// Setup DataGrid
-	var grid = $.datagrid('group', '.table', '#pagination', '.applied-filters',
-	{
+	var grid = $.datagrid('group', {
 		loader: '.loader',
-		method: 'group',
-		threshold:1000,
-		throttle: 20,
-		sort: {
+        pagination: {
+            method: 'group',
+            threshold: 1000,
+            throttle: 20
+        },
+		sorting: {
 			column: 'city',
 			direction: 'asc'
 		}
@@ -42,7 +42,7 @@ group
 
 	<div class="col-md-12">
 
-		<form data-search data-grid="group" class="search">
+		<form data-grid-search data-grid="group" class="search">
 
 			<input type="text" name="filter" placeholder="Filter All" class="search-input">
 
@@ -64,7 +64,7 @@ group
 
 	<div class="col-md-12">
 
-		<div class="applied-filters" data-grid="group"></div>
+		<div class="applied-filters" data-grid="group" data-grid-section="filters"></div>
 
 	</div>
 
@@ -76,19 +76,19 @@ group
 
 		<div class="tabbable tabs-right">
 
-			<ul id="pagination" class="nav nav-tabs" data-grid="group"></ul>
+			<ul id="pagination" class="nav nav-tabs" data-grid="group" data-grid-section="pagination"></ul>
 
 		</div>
 
 		<div class="table-responsive">
 
-			<table class="table table-bordered table-hover" data-source="{{ URL::to('source') }}" data-grid="group">
+			<table class="table table-bordered table-hover" data-grid-source="{{ URL::to('source') }}" data-grid="group" data-grid-section="results">
 				<thead>
 					<tr>
-						<th class="sortable col-md-4" data-grid="group" data-sort="country">Country</th>
-						<th class="sortable col-md-3" data-grid="group" data-sort="subdivision">Subdivision</th>
-						<th class="sortable col-md-3" data-grid="group" data-sort="city">City</th>
-						<th class="sortable col-md-2" data-grid="group" data-sort="population">Population</th>
+						<th class="sortable col-md-4" data-grid="group" data-grid-sort="country">Country</th>
+						<th class="sortable col-md-3" data-grid="group" data-grid-sort="subdivision">Subdivision</th>
+						<th class="sortable col-md-3" data-grid="group" data-grid-sort="city">City</th>
+						<th class="sortable col-md-2" data-grid="group" data-grid-sort="population">Population</th>
 					</tr>
 				</thead>
 				<tbody></tbody>

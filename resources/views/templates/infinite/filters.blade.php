@@ -1,35 +1,43 @@
 <script type="text/template" data-grid="infinite" data-template="filters">
 
-	<% _.each(filters, function(f) { %>
+    <% _.each(filters, function(f) { %>
 
-			<a href="#" class="btn btn-default remove-filter">
+    <a href="#" class="btn btn-default" data-grid-reset-filter="<%= f.name %>">
 
-				<% if (f.from !== undefined && f.to !== undefined) { %>
+        <% if (f.query.from !== undefined && f.query.to !== undefined) { %>
 
-					<%= f.label %> <em><%= moment(f.from).format('MMM DD, YYYY') + ' - ' + moment(f.to).format('MMM DD, YYYY') %></em>
+            <% if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/g.test(f.query.from) && /[0-9]{4}-[0-9]{2}-[0-9]{2}/g.test(f.query.to)) { %>
 
-				<% } else if (f.operator !== undefined) { %>
+                <%- f.label %> <em><%- moment(f.query.from).format('MMM DD, YYYY') %> - <%- moment(f.query.to).format('MMM DD, YYYY') %></em>
 
-					<%= f.column + ' ' + f.operator %> <em><%= f.value %></em>
+            <% } else { %>
 
-				<% } else { %>
+                <%- f.label %> <em><%- f.query.from %> - <%- f.query.to %></em>
 
-					<% if (f.column === 'all') { %>
+            <% } %>
 
-						<%= f.value %>
+        <% } else if (f.label) { %>
 
-					<% } else { %>
+            <%- f.label %>
 
-						<%= f.value %> in <em><%= f.column %></em>
+        <% } else { %>
 
-					<% } %>
+            <% if (f.query.column === 'all') { %>
 
-				<% } %>
+                <%- f.query.value %>
 
-				<span><i class="fa fa-minus-square-o"></i></span>
+            <% } else { %>
 
-			</a>
+                <%- f.query.value %> in <em><%- f.query.column %></em>
 
-	<% }); %>
+            <% } %>
+
+        <% } %>
+
+        <span><i class="fa fa-times-circle"></i></span>
+
+    </a>
+
+    <% }); %>
 
 </script>
