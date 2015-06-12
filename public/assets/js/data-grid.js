@@ -123,8 +123,8 @@
         this.search_timeout = null;
 
         this.current_sort = {
-            column: null,
-            direction: null,
+            column: undefined,
+            direction: undefined,
             index: 0
         };
 
@@ -133,27 +133,8 @@
             pages: null,
             total: null,
             filtered: null,
-            base_throttle: null
+            base_throttle: this.opt.pagination.throttle
         };
-
-        // Setup Base Throttle
-        this.pagination.base_throttle = this.opt.pagination.throttle;
-
-        var sections = this.opt.sections;
-
-        // Our Main Elements
-        this.$results    = $(sections.results + this.grid).length > 0 ? $(sections.results + this.grid) : $(this.grid + ' ' + sections.results);
-        this.$pagination = $(sections.pagination + this.grid).length > 0 ? $(sections.pagination + this.grid) : $(this.grid + ' ' + sections.pagination);
-        this.$filters    = $(sections.filters + this.grid).length > 0 ? $(sections.filters + this.grid) : $(this.grid + ' ' + sections.filters);
-        this.$body       = $(document.body);
-
-        // Source
-        this.source = this.$results.data('grid-source') || this.opt.source;
-
-        // Safety Check
-        if (this.$results.get(0).tagName.toLowerCase() === 'table') {
-            this.$results = this.$results.find('tbody');
-        }
 
         this.initial = true;
 
@@ -176,10 +157,30 @@
          *
          * @return void
          */
-        init: function () {
+        init: function() {
+            this.initViews();
             this.initTemplates();
             this.listeners();
             this.initRouter();
+        },
+
+        initViews: function() {
+
+            var sections = this.opt.sections;
+
+            // Our Main Elements
+            this.$results    = $(sections.results + this.grid).length > 0 ? $(sections.results + this.grid) : $(this.grid + ' ' + sections.results);
+            this.$pagination = $(sections.pagination + this.grid).length > 0 ? $(sections.pagination + this.grid) : $(this.grid + ' ' + sections.pagination);
+            this.$filters    = $(sections.filters + this.grid).length > 0 ? $(sections.filters + this.grid) : $(this.grid + ' ' + sections.filters);
+            this.$body       = $(document.body);
+
+            // Source
+            this.source = this.$results.data('grid-source') || this.opt.source;
+
+            // Safety Check
+            if (this.$results.get(0).tagName.toLowerCase() === 'table') {
+                this.$results = this.$results.find('tbody');
+            }
         },
 
         initTemplates: function() {
@@ -334,8 +335,8 @@
                             f[q.column] = ['|', q.operator, this._cleanup(q.value), '|'].join('');
                         } else {
                             f[q.column] = this._cleanup(q.value);
-
                         }
+
                         return f;
                     }, this));
                 },
@@ -348,7 +349,7 @@
                     e.preventDefault();
 
                     var $filter = $(e.currentTarget),
-                        type = $filter.data('grid-type') || 'term';
+                        type    = $filter.data('grid-type') || 'term';
 
                     if (type !== 'term') {
                         return;
@@ -372,9 +373,21 @@
                 _onSelectFilter: function(e) {
 
                     var $select = $(e.currentTarget),
-                        $option = $select.find(':selected');
+                        $filter = $select.find(':selected'),
+                        type    = $filter.data('grid-type') || 'term';
 
-                    this.filter_types.term.apply.call(this, $option);
+                    if (type !== 'term') {
+                        return;
+                    }
+
+                    this.applyScroll();
+
+                    if (this.opt.pagination.method === 'infinite') {
+                        this.$results.empty();
+                        this.pagination.page_index = 1;
+                    }
+
+                    this.filter_types.term.apply.call(this, $filter);
                 },
 
                 /**
@@ -388,19 +401,11 @@
 
                     refresh = refresh !== undefined ? refresh : true;
 
-                    this.removeFilter.call($filter.data('grid-filter'));
-
-                    this.resetBeforeApply($filter);
-
-                    if (!$filter.data('grid-filter')) {
-                        if (refresh) {
-                            this.goToPage(1);
-                            this.refresh();
-                        }
-                        return;
+                    if ($filter.data('grid-filter')) {
+                        this.removeFilter($filter.data('grid-filter'));
+                        this.resetBeforeApply($filter);
+                        this.filter_types.term._apply.call(this, $filter);
                     }
-
-                    this.filter_types.term._apply.call(this, $filter);
 
                     if (refresh) {
                         this.goToPage(1);
@@ -416,10 +421,6 @@
                         label: $filter.data('grid-label') || '',
                         default: _.isUndefined($filter.data('grid-filter-default')) ? false : true
                     };
-
-                    if (this.isFilterApplied(filter)) {
-                        return;
-                    }
 
                     if (_.has(this.opt.filters, filter.name)) {
                         filter = _.extend(filter, this.opt.filters[filter.name]);
@@ -466,6 +467,8 @@
                 listeners: function() {
                     var rangeSelector = '[data-grid-type="range"]' + this.grid + ',' + this.grid + ' [data-grid-type="range"]';
 
+                    // TODO Range filter click
+                    //this.$body.on('click', rangeSelector, $.proxy(this.filter_types.range._onRange, this));
                     this.$body.on('change', rangeSelector, $.proxy(this.filter_types.range._onRangeChange, this));
                 },
 
@@ -506,14 +509,15 @@
                 },
 
                 buildFragment: function(filter) {
-                    return [filter.name, this.opt.delimiter.expression, filter.query.from, this.opt.delimiter.expression, filter.query.to].join('');
+                    var delimiter = this.opt.delimiter.expression;
+                    return [filter.name, delimiter, filter.query.from, delimiter, filter.query.to].join('');
                 },
 
                 buildParams: function(filter) {
 
                     var f = {}, q = filter.query;
 
-                    f[q.column] = ['|', '>=', q.from, '|', '<=', q.to, '|'].join('');
+                    f[q.column] = ['|>=', q.from, '|<=', q.to, '|'].join('');
                     return f;
                 },
 
@@ -594,8 +598,8 @@
 
                     this.removeFilter(name);
 
-                    var date_format = _.isUndefined($filter.attr('data-grid-date-format')) ?
-                        null : $filter.data('grid-date-format') || this.opt.formats.date;
+                    var date_format = _.isUndefined($filter.data('grid-date-format')) ?
+                                            null : ($filter.data('grid-date-format') || this.opt.formats.date);
 
                     if (date_format && window.moment) {
                         from = moment(from).format(date_format);
@@ -634,7 +638,7 @@
 
                     var route   = fragment.split(this.opt.delimiter.expression),
                         $option = $('[data-grid-search]' + this.grid + ',' + this.grid + ' ' + '[data-grid-search]')
-                            .find('select:not([data-grid-group]) option[value=' + route[0] + ']');
+                                    .find('select:not([data-grid-group]) option[value=' + route[0] + ']');
 
                     if (!$option.length) {
                         return;
@@ -1054,8 +1058,6 @@
             var options        = this.opt,
                 current_route  = '/' + routes.join('/'),
                 current_hash   = this._getFragment(),
-                sort_column    = _.has(options.sort, 'column'),
-                sort_direction = _.has(options.sort, 'direction'),
                 last_item;
 
             if (this.opt.multiple) {
@@ -1105,7 +1107,7 @@
                     this.extractSortsFromRoute(last_item);
                     // Remove Sort From parsed_route
                     parsed_route = parsed_route.splice(0, (parsed_route.length - 1));
-                } else if (sort_column && sort_direction) {
+                } else if (options.sorting.column && options.sorting.direction) {
                     // Convert sort to string
                     var str = [options.sorting.column, options.delimiter.expression, options.sorting.direction].join('');
                     this.extractSortsFromRoute(str);
@@ -1129,8 +1131,8 @@
             }, this));
 
             if (this.opt.multiple && current_hash.indexOf(this.key) === -1) {
-                if (sort_column && sort_direction) {
-                    var str = options.sorting.column + options.delimiter.expression + options.sorting.direction;
+                if (options.sorting.column && options.sorting.direction) {
+                    var str = [options.sorting.column, options.delimiter.expression, options.sorting.direction].join('');
                     this.extractSortsFromRoute(str);
                 }
             }
@@ -1145,7 +1147,7 @@
          */
         pushHash: function() {
 
-            var current_hash   = this._getFragment() || '',
+            var current_hash   = this._getFragment(),
                 path;
 
             // filters/sorts/page/throttle/threshold
@@ -1180,7 +1182,7 @@
 
         _buildMultiplePath: function (base, routes_array) {
 
-            // TODO Refactor to clean up, improve for better understanding what is being done
+            // TODO Refactor to clean up, improve for better understanding of what is being done
 
             var parsed_route, key, final_path = '', appended, path,
                 route_index = -1;
@@ -1413,24 +1415,24 @@
                 this.reset();
             }
 
-            if (($filter.data('grid-reset-filter') || '').length) {
+            if (!_.isEmpty($filter.data('grid-reset-filter'))) {
                 // Reset filter by name
                 this.removeFilter($filter.data('grid-reset-filter'));
             }
 
-            if (($filter.data('grid-reset-group') || '').length) {
+            if (!_.isEmpty($filter.data('grid-reset-group'))) {
                 // Reset filter group by name
                 this.removeGroupFilters($filter.data('grid-reset-group'));
             }
 
-            if ((resetFilter.data('grid-reset-filter') || '').length) {
+            if (!_.isEmpty(resetFilter.data('grid-reset-filter'))) {
                 // Reset filter by name from parent
                 this.removeFilter(resetFilter.data('grid-reset-filter'));
             }
 
             if (resetGroup.length) {
 
-                if ((resetGroup.data('grid-reset-group') || '').length) {
+                if (!_.isEmpty(resetGroup.data('grid-reset-group'))) {
                     // Reset filter group by name from parent
                     this.removeGroupFilters(resetGroup.data('grid-reset-group'));
                 } else {
@@ -1444,7 +1446,7 @@
         },
 
         isFilterApplied: function(filter) {
-            return !! _.findWhere(this.applied_filters, {name: filter.name});
+            return _.isObject(_.findWhere(this.applied_filters, {name: filter.name}));
         },
 
         /**
@@ -1489,7 +1491,7 @@
                 this.current_sort.index = 1;
             }
 
-            if (typeof sort_array[1] !== 'undefined') {
+            if (!_.isUndefined(sort_array[1])) {
                 direction = sort_array[1];
             }
 
@@ -1501,7 +1503,7 @@
                 } else {
                     this.current_sort.direction = '';
                 }
-            } else if (sort_array[0] === this.default_column && this.default_column !== '') {
+            } else if (sort_array[0] === this.default_column && !_.isEmpty(this.default_column)) {
                 this.current_sort.column = this.default_column;
                 this.current_sort.direction = (this.default_direction === 'asc' ? 'desc' : 'asc');
             } else {
@@ -1569,7 +1571,7 @@
 
             var page_array = page.split(this.opt.delimiter.expression);
 
-            if (page_array[1] === '' || page_array[1] <= 0) {
+            if (_.isEmpty(page_array[1]) || page_array[1] <= 0) {
                 this.pagination.page_index = 1;
             } else {
                 this.pagination.page_index = parseInt(page_array[1], 10);
@@ -1846,7 +1848,7 @@
             }
 
             params = {
-                page_start: per_page === 0 ? 0 : ( this.pagination.page_index === 1 ? this.pagination.filtered > 0 ? 1 : 0 : ( per_page * (this.pagination.page_index - 1 ) + 1)),
+                page_start: per_page === 0 ? 0 : (this.pagination.page_index === 1 ? this.pagination.filtered > 0 ? 1 : 0 : ( per_page * (this.pagination.page_index - 1 ) + 1)),
                 page_limit: page_limit,
                 next_page: next,
                 previous_page: prev,
@@ -1996,7 +1998,7 @@
 
             var callback = this.opt.callback;
 
-            if (callback !== undefined && $.isFunction(callback)) {
+            if (_.isFunction(callback)) {
                 callback.call(this);
             }
         },
@@ -2010,7 +2012,7 @@
 
             var _scroll = this.opt.pagination.scroll;
 
-            if ($.isFunction(_scroll)) {
+            if (_.isFunction(_scroll)) {
                 _scroll();
             } else if (_scroll) {
                 $(document.body).animate({ scrollTop: $(_scroll).offset().top }, 200);
