@@ -72,12 +72,6 @@
             }
         },
 
-        sections: {
-            results: '[data-grid-section="results"]',
-            filters: '[data-grid-section="filters"]',
-            pagination: '[data-grid-section="pagination"]'
-        },
-
         template_settings: {
             evaluate    : /<%([\s\S]+?)%>/g,
             interpolate : /<%=([\s\S]+?)%>/g,
@@ -179,16 +173,10 @@
 
             _.templateSettings = this.opt.template_settings;
 
-            this.layouts = {};
-
-            this.$body       = $(document.body);
+            this.$body      = $(document.body);
+            this.layouts    = {};
 
             this.setLayout(this.opt.layouts);
-
-            // Our Main Elements
-            //this.$results    = $(sections.results + this.grid).length > 0 ? $(sections.results + this.grid) : $(this.grid + ' ' + sections.results);
-            //this.$pagination = $(sections.pagination + this.grid).length > 0 ? $(sections.pagination + this.grid) : $(this.grid + ' ' + sections.pagination);
-            //this.$filters    = $(sections.filters + this.grid).length > 0 ? $(sections.filters + this.grid) : $(this.grid + ' ' + sections.filters);
         },
 
         setLayout: function(name, options) {
@@ -203,12 +191,18 @@
 
             _.each(_.keys(layouts), $.proxy(function(key) {
 
+                if (_.isNull(layouts[key])) {
+                    delete this.layouts[key];
+                    return;
+                }
+
                 var layout      = layouts[key].layout,
                     $layout     = $(this.grid + layout + ',' + this.grid + ' ' + layout),
                     template    = layouts[key].template,
                     $template   = $(this.grid + template + ',' + this.grid + ' ' + template),
                     _default    = _.isUndefined(this.layouts[key]) ? {
-                        active: true
+                        active: true,
+                        action: 'update'
                     } : this.layouts[key];
 
                 // Safety check
@@ -219,12 +213,11 @@
                 this.layouts[key] = _.defaults({
                     layout: $layout,
                     template: _.template($template.html()),
-                    action: layouts[key].action || 'update',
+                    action: layouts[key].action,
                     active: layouts[key].active
                 }, _default);
 
             }, this));
-
         },
 
         initRouter: function() {
