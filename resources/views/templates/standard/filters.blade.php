@@ -1,43 +1,50 @@
-<script type="text/template" data-grid="standard" data-template="filters">
+<script type="text/template" data-grid="standard" data-grid-template="filters">
 
-	<% _.each(filters, function(f) { %>
+    <% var filters = _.reject(grid.applied_filters, function(f) {return f.type === 'live';}); %>
 
-		<button class="btn btn-default" data-grid-reset-filter="<%= f.name %>">
+    <% if (_.isEmpty(filters)) { %>
+        <i>There are no filters applied.</i>
+    <% } else { %>
 
-			<% if (f.query.from !== undefined && f.query.to !== undefined) { %>
+        <% _.each(filters, function(f) { %>
 
-				<% if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/g.test(f.query.from) && /[0-9]{4}-[0-9]{2}-[0-9]{2}/g.test(f.query.to)) { %>
+            <button class="btn btn-default" data-grid-reset-filter="<%= f.name %>">
 
-					<%- f.label %> <em><%- moment(f.query.from).format('MMM DD, YYYY') %> - <%- moment(f.query.to).format('MMM DD, YYYY') %></em>
+                <% if (f.query.from !== undefined && f.query.to !== undefined) { %>
 
-				<% } else { %>
+                    <% if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/g.test(f.query.from) && /[0-9]{4}-[0-9]{2}-[0-9]{2}/g.test(f.query.to)) { %>
 
-					<%- f.label %> <em><%- f.query.from %> - <%- f.query.to %></em>
+                        <%- f.label %> <em><%- moment(f.query.from).format('MMM DD, YYYY') %> - <%- moment(f.query.to).format('MMM DD, YYYY') %></em>
 
-				<% } %>
+                    <% } else { %>
 
-			<% } else if (f.label) { %>
+                        <%- f.label %> <em><%- f.query.from %> - <%- f.query.to %></em>
 
-				<%- f.label %>
+                    <% } %>
 
-			<% } else { %>
+                <% } else if (f.label) { %>
 
-				<% if (f.query.column === 'all') { %>
+                    <%- f.label %>
 
-					<%- f.query.value %>
+                <% } else { %>
 
-				<% } else { %>
+                    <% if (f.query.column === 'all') { %>
 
-					<%- f.query.value %> in <em><%- f.query.column %></em>
+                        <%- f.query.value %>
 
-				<% } %>
+                    <% } else { %>
 
-			<% } %>
+                        <%- f.query.value %> in <em><%- f.query.column %></em>
 
-			<span><i class="fa fa-times-circle"></i></span>
+                    <% } %>
 
-		</button>
+                <% } %>
 
-	<% }); %>
+                <span><i class="fa fa-times-circle"></i></span>
+
+            </button>
+
+        <% }); %>
+    <% } %>
 
 </script>

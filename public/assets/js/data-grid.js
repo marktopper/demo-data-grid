@@ -20,12 +20,6 @@
 {
     'use strict';
 
-    // Workaround for utf-8 params issue in Safari
-    // TODO Fix Chrome encoded uri ugliness
-    Backbone.History.prototype.decodeFragment = function(fragment) {
-        return fragment;
-    };
-
     /**
      * Default settings
      *
@@ -58,6 +52,24 @@
         delimiter: {
             query: ';',
             expression: ':'
+        },
+
+        layouts: {
+            results: {
+                template: '[data-grid-template="results"]',
+                layout: '[data-grid-layout="results"]',
+                active: true
+            },
+            filters: {
+                template: '[data-grid-template="filters"]',
+                layout: '[data-grid-layout="filters"]',
+                active: true
+            },
+            pagination: {
+                template: '[data-grid-template="pagination"]',
+                layout: '[data-grid-layout="pagination"]',
+                active: true
+            }
         },
 
         sections: {
@@ -111,7 +123,7 @@
         this.opt = _.extend({}, defaults);
 
         _.each(_.keys(options), $.proxy(function(key) {
-            this.opt[key] = _.defaults(options[key], defaults[key]);
+            this.opt[key] = (key !== 'layouts') ? _.defaults(options[key], defaults[key]) : options[key];
         }, this));
 
         this.applied_filters = [];
@@ -158,72 +170,61 @@
          * @return void
          */
         init: function() {
-            this.initViews();
-            this.initTemplates();
+            this.initLayouts();
             this.listeners();
             this.initRouter();
         },
 
-        initViews: function() {
+        initLayouts: function() {
 
-            var sections = this.opt.sections;
-
-            // Our Main Elements
-            this.$results    = $(sections.results + this.grid).length > 0 ? $(sections.results + this.grid) : $(this.grid + ' ' + sections.results);
-            this.$pagination = $(sections.pagination + this.grid).length > 0 ? $(sections.pagination + this.grid) : $(this.grid + ' ' + sections.pagination);
-            this.$filters    = $(sections.filters + this.grid).length > 0 ? $(sections.filters + this.grid) : $(this.grid + ' ' + sections.filters);
-            this.$body       = $(document.body);
-
-            // Source
-            this.source = this.$results.data('grid-source') || this.opt.source;
-
-            // Safety Check
-            if (this.$results.get(0).tagName.toLowerCase() === 'table') {
-                this.$results = this.$results.find('tbody');
-            }
-        },
-
-        initTemplates: function() {
-
-            // Set _ templates interpolate
             _.templateSettings = this.opt.template_settings;
 
-            var results_template       = $('[data-template="results"]' + this.grid).html(),
-                pagination_template    = $('[data-template="pagination"]' + this.grid).html(),
-                filters_template       = $('[data-template="filters"]' + this.grid).html(),
-                empty_results_template = $('[data-template="no_results"]' + this.grid).html(),
-                empty_filters_template = $('[data-template="no_filters"]' + this.grid).html();
+            this.layouts = {};
 
-            if (results_template === undefined) {
-                console.error('results template not found.');
+            this.$body       = $(document.body);
+
+            this.setLayout(this.opt.layouts);
+
+            // Our Main Elements
+            //this.$results    = $(sections.results + this.grid).length > 0 ? $(sections.results + this.grid) : $(this.grid + ' ' + sections.results);
+            //this.$pagination = $(sections.pagination + this.grid).length > 0 ? $(sections.pagination + this.grid) : $(this.grid + ' ' + sections.pagination);
+            //this.$filters    = $(sections.filters + this.grid).length > 0 ? $(sections.filters + this.grid) : $(this.grid + ' ' + sections.filters);
+        },
+
+        setLayout: function(name, options) {
+
+            var layouts = {};
+
+            if (_.isObject(name)) {
+                layouts = name;
+            } else {
+                layouts[name] = options;
             }
 
-            if (pagination_template === undefined) {
-                console.error('pagination template not found.');
-            }
+            _.each(_.keys(layouts), $.proxy(function(key) {
 
-            if (filters_template === undefined) {
-                console.error('filters template not found.');
-            }
+                var layout      = layouts[key].layout,
+                    $layout     = $(this.grid + layout + ',' + this.grid + ' ' + layout),
+                    template    = layouts[key].template,
+                    $template   = $(this.grid + template + ',' + this.grid + ' ' + template),
+                    _default    = _.isUndefined(this.layouts[key]) ? {
+                        active: true
+                    } : this.layouts[key];
 
-            // Allow empty no_results template
-            if (empty_results_template === undefined) {
-                empty_results_template = '';
-            }
+                // Safety check
+                if ($layout.get(0).tagName.toLowerCase() === 'table') {
+                    $layout = $layout.find('tbody');
+                }
 
-            // Allow empty no_filters template
-            if (empty_filters_template === undefined) {
-                empty_filters_template = '';
-            }
+                this.layouts[key] = _.defaults({
+                    layout: $layout,
+                    template: _.template($template.html()),
+                    action: layouts[key].action || 'update',
+                    active: layouts[key].active
+                }, _default);
 
-            // Cache the Underscore Templates
-            this.tmpl = {
-                results:       _.template(results_template),
-                pagination:    _.template(pagination_template),
-                filters:       _.template(filters_template),
-                empty_results: _.template(empty_results_template),
-                empty_filters: _.template(empty_filters_template)
-            };
+            }, this));
+
         },
 
         initRouter: function() {
@@ -252,7 +253,6 @@
             this.backbone.history.start(routerOptions);
         },
 
-
         /**
          * Checks the Data Grid dependencies.
          *
@@ -265,7 +265,7 @@
             }
 
             if (typeof Backbone === 'undefined') {
-                throw new Error('DataGrid Requires Backbone.js v1.2.1 or later to run!');
+                throw new Error('DataGrid Requires Backbone.js v1.0.0 or later to run!');
             }
         },
 
@@ -357,11 +357,6 @@
 
                     this.applyScroll();
 
-                    if (this.opt.pagination.method === 'infinite') {
-                        this.$results.empty();
-                        this.pagination.page_index = 1;
-                    }
-
                     this.filter_types.term.apply.call(this, $filter);
                 },
 
@@ -381,11 +376,6 @@
                     }
 
                     this.applyScroll();
-
-                    if (this.opt.pagination.method === 'infinite') {
-                        this.$results.empty();
-                        this.pagination.page_index = 1;
-                    }
 
                     this.filter_types.term.apply.call(this, $filter);
                 },
@@ -532,11 +522,6 @@
                         return;
                     }
 
-                    if (this.opt.pagination.method === 'infinite') {
-                        this.$results.empty();
-                        this.pagination.page_index = 1;
-                    }
-
                     this.filter_types.range.apply.call(this, $filter);
                 },
 
@@ -549,11 +534,6 @@
 
                     if (type !== 'range') {
                         return;
-                    }
-
-                    if (this.opt.pagination.method === 'infinite') {
-                        this.$results.empty();
-                        this.pagination.page_index = 1;
                     }
 
                     this.filter_types.range.apply.call(this, $filter);
@@ -739,11 +719,6 @@
                         }
                     };
 
-                    // Clear results for infinite grids
-                    if (this.opt.pagination.method === 'infinite') {
-                        this.$results.empty();
-                    }
-
                     $input.val('').data('old', '');
 
                     this.applyFilter(filter);
@@ -831,11 +806,6 @@
 
                         $input.data('old', value);
 
-                        // Clear results for infinite grids
-                        if (this.opt.pagination.method === 'infinite') {
-                            this.$results.empty();
-                        }
-
                         this.applyFilter(filter);
 
                         this.goToPage(1);
@@ -890,11 +860,11 @@
             this.filterListeners();
             this.callbackListeners(this.opt.events);
 
-            this.$filters.on('click', '[data-grid-reset-filter]', $.proxy(this.onFilterUnapply, this));
+            this.$body.on('click', '[data-grid-reset-filter]' + grid + ',' + grid + ' [data-grid-reset-filter]', $.proxy(this.onFilterUnapply, this));
 
             this.$body.on('click', '[data-grid-sort]' + grid + ',' + grid + ' [data-grid-sort]', $.proxy(this.onSort, this));
-            this.$pagination.on('click', '[data-grid-page]', $.proxy(this.onPaginate, this));
-            this.$pagination.on('click', '[data-grid-throttle]', $.proxy(this.onThrottle, this));
+            this.$body.on('click', '[data-grid-page]' + grid + ',' + grid + ' [data-grid-page]', $.proxy(this.onPaginate, this));
+            this.$body.on('click', '[data-grid-throttle]', $.proxy(this.onThrottle, this));
             this.$body.on('click', '[data-grid-download]', $.proxy(this.onDownload, this));
 
             if (this.opt.pagination.infinite_scroll && this.opt.pagination.method === 'infinite') {
@@ -913,6 +883,10 @@
 
                 $(window).scroll(throttled);
             }
+
+            $(document).ajaxComplete($.proxy(function(){
+                this.is_search_active = false;
+            }, this));
         },
 
         onRouteDispatch: function(path) {
@@ -973,10 +947,6 @@
 
             this.removeFilter(name);
 
-            if (this.opt.pagination.method === 'infinite') {
-                this.$results.empty();
-            }
-
             this.refresh();
         },
 
@@ -989,10 +959,6 @@
 
             e.preventDefault();
             var elem = $(e.currentTarget);
-
-            if (this.opt.pagination.method === 'infinite') {
-                this.$results.empty();
-            }
 
             this.extractSortsFromClick(elem);
             this.refresh();
@@ -1040,7 +1006,7 @@
             e.preventDefault();
 
             var type = $(e.target).data('grid-download');
-            document.location = this.source + '?' + this.buildAjaxURI(type);
+            document.location = this.opt.source + '?' + this.buildAjaxURI(type);
         },
 
         _getFragment: function() {
@@ -1126,7 +1092,6 @@
                 } else {
                     // Reset applied filters if none are set via the hash
                     this.applied_filters = [];
-                    this.$filters.html(this.tmpl.empty_filters());
                 }
             }, this));
 
@@ -1241,15 +1206,15 @@
             // Apply filters to our global filters collection.
             this.applied_filters.push(filter);
 
-            // Avoid re-rendering applied filters on livesearch request
-            if (filter.type !== 'live') {
-
-                // Render our filters
-                this.$filters.html(this.tmpl.filters({
-                    grid: this,
-                    filters: _.reject(this.applied_filters, function(f) {return f.type === 'live';})
-                }));
-            }
+            // TODO Avoid re-rendering applied filters on livesearch request
+            //if (filter.type !== 'live') {
+            //
+            //    // Render our filters
+            //    this.$filters.html(this.tmpl.filters({
+            //        grid: this,
+            //        filters: _.reject(this.applied_filters, function(f) {return f.type === 'live';})
+            //    }));
+            //}
 
             $(this).trigger('dg:applied', filter);
         },
@@ -1308,14 +1273,6 @@
             $(this).trigger('dg:removing', filter);
 
             this.applied_filters = _.reject(this.applied_filters, function(f) {return f.name === name});
-
-            // TODO Trigger view component update
-            if (this.applied_filters.length > 0) {
-                this.$filters.html(this.tmpl.filters({ filters: this.applied_filters }));
-            } else {
-                this.$filters.html(this.tmpl.empty_filters);
-            }
-
             this.goToPage(1);
 
             $(this).trigger('dg:removed', filter);
@@ -1354,6 +1311,7 @@
 
             var index;
 
+            // TODO Rewrite pagination to store current page differently
             if (this.opt.pagination.method === 'infinite') {
                 index = $el.data('grid-page');
                 $el.data('grid-page', ++index);
@@ -1362,7 +1320,6 @@
             }
 
             this.goToPage(index);
-
             this.refresh();
         },
 
@@ -1680,84 +1637,91 @@
             this.showLoader();
 
             $.ajax({
-                url: this.source,
+                url: this.opt.source,
                 dataType : 'json',
                 data: this.buildAjaxURI()
             })
-                .done($.proxy(function(response) {
-
-                    if (!this.opt.pagination.throttle) {
-                        defaults.pagination.throttle = response.throttle;
-                    }
-
-                    if (!this.opt.pagination.threshold) {
-                        defaults.pagination.threshold = response.threshold;
-                    }
-
-                    if (this.pagination.page_index > response.pages) {
-                        this.pagination.page_index = response.pages;
-                        this.refresh();
-
-                        return false;
-                    }
-
-                    this.pagination.filtered = response.filtered;
-                    this.pagination.total = response.total;
-
-                    // Keep infinite results to append load more
-                    if (this.opt.pagination.method !== 'infinite') {
-                        this.$results.html(this.tmpl.results(response));
-                    } else {
-                        this.$results.append(this.tmpl.results(response));
-                    }
-
-                    this.$pagination.html(this.tmpl.pagination(this.buildPagination(response)));
-
-                    this.pagination.pages = response.pages;
-
-                    if (!response.results.length) {
-                        this.$results.html(this.tmpl.empty_results());
-                    }
-
-                    if (!this.applied_filters.length) {
-                        this.$filters.html(this.tmpl.empty_filters());
-                    }
-
-                    if (response.sort !== '') {
-
-                        var $sort = $('[data-grid-sort^="' + response.sort + '"]' + this.grid + ',' + this.grid + ' [data-grid-sort^="' + response.sort + '"]');
-
-                        if (this.buildSortFragment()) {
-                            this.current_sort.column = response.sort;
-                            this.current_sort.direction = response.direction;
-                        }
-
-                        if (_.isEmpty(this.opt.sorting.column)) {
-                            this.default_column = response.default_column;
-                            this.default_direction = response.direction;
-                        }
-
-                        this.setSortDirection($sort, response.direction);
-                    }
-
-                    this.hideLoader();
-
-                    // TODO Don't push state on live search requests
-                    $(this).trigger('dg:hashchange');
-
-                    this.callback();
-
-                    $(this).trigger('dg:fetched', response);
-
-                    this.is_search_active = false;
-                }, this))
+                .done($.proxy(this.render, this))
                 .error($.proxy(function(jqXHR, textStatus, errorThrown)
                 {
-
                     console.error('fetchResults ' + jqXHR.status, errorThrown);
-                    this.is_search_active = false;
-
                 }, this));
+        },
+
+        /**
+         * Renders ajax response
+         *
+         */
+        render: function(response) {
+
+            if (!this.opt.pagination.throttle) {
+                defaults.pagination.throttle = response.throttle;
+            }
+
+            if (!this.opt.pagination.threshold) {
+                defaults.pagination.threshold = response.threshold;
+            }
+
+            if (this.pagination.page_index > response.pages) {
+                this.pagination.page_index = response.pages;
+                this.refresh();
+
+                return false;
+            }
+
+            this.pagination.filtered = response.filtered;
+            this.pagination.total = response.total;
+            this.pagination.pages = response.pages;
+
+            // TODO Arbitrary layouts doesn't work with `infinite`
+            // Keep infinite results to append load more
+            //if (this.opt.pagination.method !== 'infinite') {
+            //    this.$results.html(this.tmpl.results(response));
+            //} else {
+            //    this.$results.append(this.tmpl.results(response));
+            //}
+
+            _.each(_.keys(this.layouts), $.proxy(function(key) {
+
+                var active  = _.isUndefined(this.layouts[key].layout.data('grid-layout-disabled'));
+
+                if (!active) {
+                    return;
+                }
+
+                var layout  = this.layouts[key].layout,
+                    data    = this.layouts[key].template({grid: this, response: response}),
+                    action  = this.layouts[key].action === 'append' ? 'append' : 'html';
+
+                // Render template
+                layout[action](data);
+            }, this));
+
+            if (response.sort !== '') {
+
+                var $sort = $('[data-grid-sort^="' + response.sort + '"]' + this.grid + ',' + this.grid + ' [data-grid-sort^="' + response.sort + '"]');
+
+                if (this.buildSortFragment()) {
+                    this.current_sort.column = response.sort;
+                    this.current_sort.direction = response.direction;
+                }
+
+                if (_.isEmpty(this.opt.sorting.column)) {
+                    this.default_column = response.default_column;
+                    this.default_direction = response.direction;
+                }
+
+                this.setSortDirection($sort, response.direction);
+            }
+
+            this.hideLoader();
+
+            // TODO Don't push state on live search requests
+            $(this).trigger('dg:hashchange');
+
+            this.callback();
+
+            $(this).trigger('dg:fetched', response);
         },
 
         /**
@@ -1847,7 +1811,7 @@
                 page_limit = this.pagination.total < (per_page * this.pagination.page_index) ? this.pagination.filtered : (per_page * this.pagination.page_index);
             }
 
-            params = {
+            return [{
                 page_start: per_page === 0 ? 0 : (this.pagination.page_index === 1 ? this.pagination.filtered > 0 ? 1 : 0 : ( per_page * (this.pagination.page_index - 1 ) + 1)),
                 page_limit: page_limit,
                 next_page: next,
@@ -1860,11 +1824,7 @@
                 throttle: this.opt.pagination.throttle ? this.opt.pagination.throttle : defaults.pagination.throttle,
                 threshold: this.opt.pagination.threshold ? this.opt.pagination.threshold : defaults.pagination.threshold,
                 per_page: per_page
-            };
-
-            return {
-                pagination: [params]
-            };
+            }];
         },
 
         /**
@@ -1877,19 +1837,11 @@
          */
         buildInfinitePagination: function(page, next, total) {
 
-            if (next === null) {
-                return {
-                    pagination: null
-                };
-            }
-
-            return {
-                pagination: [{
-                    page: page,
-                    total: total,
-                    infinite: true
-                }]
-            };
+            return (next === null) ? null : [{
+                page: page,
+                total: total,
+                infinite: true
+            }];
         },
 
         /**

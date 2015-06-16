@@ -1,4 +1,6 @@
-<script type="text/template" data-grid="standard" data-template="pagination">
+<script type="text/template" data-grid="standard" data-grid-template="pagination">
+
+    <% var pagination = grid.buildPagination(response); %>
 
 	<% _.each(pagination, function(p) { %>
 
