@@ -57,18 +57,15 @@
         layouts: {
             results: {
                 template: '[data-grid-template="results"]',
-                layout: '[data-grid-layout="results"]',
-                active: true
+                layout: '[data-grid-layout="results"]'
             },
             filters: {
                 template: '[data-grid-template="filters"]',
-                layout: '[data-grid-layout="filters"]',
-                active: true
+                layout: '[data-grid-layout="filters"]'
             },
             pagination: {
                 template: '[data-grid-template="pagination"]',
-                layout: '[data-grid-layout="pagination"]',
-                active: true
+                layout: '[data-grid-layout="pagination"]'
             }
         },
 
@@ -868,8 +865,8 @@
 
             this.$body.on('click', '[data-grid-sort]' + grid + ',' + grid + ' [data-grid-sort]', $.proxy(this.onSort, this));
             this.$body.on('click', '[data-grid-page]' + grid + ',' + grid + ' [data-grid-page]', $.proxy(this.onPaginate, this));
-            this.$body.on('click', '[data-grid-throttle]', $.proxy(this.onThrottle, this));
-            this.$body.on('click', '[data-grid-download]', $.proxy(this.onDownload, this));
+            this.$body.on('click', '[data-grid-throttle]' + grid + ',' + grid + ' [data-grid-throttle]', $.proxy(this.onThrottle, this));
+            this.$body.on('click', '[data-grid-download]' + grid + ',' + grid + ' [data-grid-download]', $.proxy(this.onDownload, this));
 
             if (this.opt.pagination.infinite_scroll && this.opt.pagination.method === 'infinite') {
 
@@ -1312,17 +1309,13 @@
          */
         handlePageChange: function($el) {
 
-            var index;
+            var page = $el.data('grid-page');
 
-            // TODO Rewrite pagination to store current page differently
             if (this.opt.pagination.method === 'infinite') {
-                index = $el.data('grid-page');
-                $el.data('grid-page', ++index);
-            } else {
-                index = $el.data('grid-page');
+                $el.data('grid-page', ++page);
             }
 
-            this.goToPage(index);
+            this.goToPage(page);
             this.refresh();
         },
 
@@ -1656,6 +1649,7 @@
         /**
          * Handles ajax response rendering
          *
+         * @param response  object
          */
         render: function(response) {
 
@@ -1724,6 +1718,7 @@
 
         /**
          * Handles ajax failure response
+         *
          * @param jqXHR
          * @param textStatus
          * @param errorThrown
