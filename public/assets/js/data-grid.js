@@ -1682,7 +1682,7 @@
 
                 var layout  = this.layouts[key].layout,
                     data    = this.layouts[key].template({grid: this, response: response}),
-                    action  = this.layouts[key].action === 'append' ? 'append' : 'html';
+                    action  = this.layouts[key].action === 'update' ? 'html' : this.layouts[key].action;
 
                 // Render template
                 layout[action](data);
