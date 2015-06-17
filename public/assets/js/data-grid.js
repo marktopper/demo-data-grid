@@ -124,8 +124,8 @@
         this.search_timeout = null;
 
         this.current_sort = {
-            column: undefined,
-            direction: undefined,
+            column: this.opt.sorting.column || undefined,
+            direction: this.opt.sorting.direction || undefined,
             index: 0
         };
 
@@ -208,6 +208,16 @@
                         active: true,
                         action: 'update'
                     } : this.layouts[key];
+
+                if (!$layout.length) {
+                    console.error('Element for layout "' + key + '" is not found.');
+                    return;
+                }
+
+                if (!$template.length) {
+                    console.error('Template for layout "' + key + '" is not found.');
+                    return;
+                }
 
                 // Safety check
                 if ($layout.get(0).tagName.toLowerCase() === 'table') {
@@ -620,7 +630,7 @@
                         $option = $('[data-grid-search]' + this.grid + ',' + this.grid + ' ' + '[data-grid-search]')
                                     .find('select:not([data-grid-group]) option[value=' + route[0] + ']');
 
-                    if (!$option.length) {
+                    if (route[0] !== 'all' && !$option.length) {
                         return;
                     }
 
@@ -1123,13 +1133,8 @@
 
                 base        = _.compact(_.flatten([filters, sort, page, throttle, threshold])).join('/');
 
-            if (_.isEmpty(filters) || _.isEmpty(sort) || this.pagination.page_index < 1 && base.length) {
-                base = '';
-            } else if (this.opt.multiple) {
-                base = base.length ? [this.key, base].join('/') : '';
-            }
-
             if (this.opt.multiple) {
+                base = base.length ? [this.key, base].join('/') : '';
                 path = this._buildMultiplePath(base, _.compact(current_hash.split('grid/')));
             } else {
                 path = base;
@@ -1251,7 +1256,11 @@
 
             if ($sort.length) {
                 this.extractSortsFromClick($sort);
+            } else if (this.opt.sorting.column && this.opt.sorting.direction) {
+                var str = [this.opt.sorting.column, this.opt.delimiter.expression, this.opt.sorting.direction].join('');
+                this.extractSortsFromRoute(str);
             }
+
 
             this.goToPage(1);
         },
@@ -1426,6 +1435,7 @@
         extractSortsFromClick: function($el) {
 
             // TODO Refactor to unify method
+            // TODO Fix sort reset logic
 
             var sort_array = $el.data('grid-sort').split(':'),
                 direction  = 'asc';
@@ -1435,7 +1445,7 @@
                 this.goToPage(1);
             }
 
-            if (this.current_sort.column === sort_array[0] && this.current_sort.index < 3 && this.current_sort.column !== this.opt.sorting.column) {
+            if (this.current_sort.column === sort_array[0] && this.current_sort.index < 3) {
                 this.current_sort.index++;
             } else {
                 if (sort_array[0] !== this.default_column && this.default_column !== '') {

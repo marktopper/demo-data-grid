@@ -16,7 +16,7 @@ group
 $(function() {
 	// Setup DataGrid
 	var grid = $.datagrid('group', {
-		loader: '.loader',
+        source: '{{ URL::to('source') }}',
         pagination: {
             method: 'group',
             threshold: 1000,
@@ -25,8 +25,11 @@ $(function() {
 		sorting: {
 			column: 'city',
 			direction: 'asc'
-		}
-	});
+		},
+        loader: {
+            selector: '.loader'
+        }
+    });
 });
 </script>
 @stop
@@ -64,7 +67,7 @@ $(function() {
 
 	<div class="col-md-12">
 
-		<div class="applied-filters" data-grid="group" data-grid-section="filters"></div>
+		<div class="applied-filters" data-grid="group" data-grid-layout="filters"></div>
 
 	</div>
 
@@ -76,13 +79,13 @@ $(function() {
 
 		<div class="tabbable tabs-right">
 
-			<ul id="pagination" class="nav nav-tabs" data-grid="group" data-grid-section="pagination"></ul>
+			<ul id="pagination" class="nav nav-tabs" data-grid="group" data-grid-layout="pagination"></ul>
 
 		</div>
 
 		<div class="table-responsive">
 
-			<table class="table table-bordered table-hover" data-grid-source="{{ URL::to('source') }}" data-grid="group" data-grid-section="results">
+			<table class="table table-bordered table-hover" data-grid="group" data-grid-layout="results">
 				<thead>
 					<tr>
 						<th class="sortable col-md-4" data-grid="group" data-grid-sort="country">Country</th>
@@ -105,6 +108,5 @@ $(function() {
 @include('templates/group/results')
 @include('templates/group/pagination')
 @include('templates/group/filters')
-@include('templates/group/no_results')
 
 @stop

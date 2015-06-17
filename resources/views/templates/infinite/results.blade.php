@@ -1,21 +1,30 @@
-<script type="text/template" data-grid="infinite" data-template="results">
+<script type="text/template" data-grid="infinite" data-grid-template="results">
 
-	<div class="row">
+    <% var results = response.results; %>
 
-		<% _.each(results, function(r) { %>
+    <% if (_.isEmpty(results)) { %>
+        <li>
+            No Results
+        </li>
+    <% } else { %>
 
-			<li class="col-md-4">
-				<div class="wrapper">
-					<h2><%= r.city %>
-						<small><%= r.subdivision %></small>
-					</h2>
+        <div class="row">
 
-					<span><%= r.population %></span>
-				</div>
-			</li>
+            <% _.each(results, function(r) { %>
 
-		<% }); %>
+                <li class="col-md-4">
+                    <div class="wrapper">
+                        <h2><%= r.city %>
+                            <small><%= r.subdivision %></small>
+                        </h2>
 
-	</div>
+                        <span><%= r.population %></span>
+                    </div>
+                </li>
+
+            <% }); %>
+
+        </div>
+    <% } %>
 
 </script>

@@ -21,6 +21,7 @@ $(function()
 {
 	// Setup DataGrid
     var grid = $.datagrid('standard', {
+        source: '{{ URL::to('source') }}',
         pagination: {
             throttle: 20
         },
@@ -28,7 +29,9 @@ $(function()
             semantic: true,
             base: '/semantic'
         },
-        loader: '.loader'
+        loader: {
+            selector: '.loader'
+        }
     }).on('dg:applying', function(filter) {
         console.log(this, filter);
     });
@@ -212,7 +215,7 @@ $(function()
 {{-- Applied filters --}}
 <div class="row">
 
-	<div class="applied-filters" data-grid-section="filters" data-grid="standard"></div>
+	<div class="applied-filters" data-grid-layout="filters" data-grid="standard"></div>
 
 </div>
 
@@ -223,7 +226,7 @@ $(function()
 
 		<div class="table-responsive">
 
-			<table class="table table-striped table-bordered table-hover" data-grid-source="{{ URL::to('source') }}" data-grid-section="results" data-grid="standard">
+			<table class="table table-striped table-bordered table-hover" data-grid-layout="results" data-grid="standard">
 
 				<thead>
 					<tr>
@@ -243,12 +246,10 @@ $(function()
 </div>
 
 {{-- Pagination --}}
-<footer id="pagination" data-grid-section="pagination" data-grid="standard"></footer>
+<footer id="pagination" data-grid-layout="pagination" data-grid="standard"></footer>
 
 @include('templates/standard/results')
-@include('templates/standard/no_results')
-@include('templates/standard/pagination')
 @include('templates/standard/filters')
-@include('templates/standard/no_filters')
+@include('templates/standard/pagination')
 
 @stop
