@@ -28,7 +28,9 @@ $(function() {
             throttle: 20
         },
         multiple: true,
-        loader: '.loader',
+        loader: {
+            selector: '.loader'
+        },
         filters: {
             'mexico:large': {
                 type: 'term',
@@ -185,7 +187,7 @@ $(function() {
 
 	<div class="col-md-5">
 
-		<form data-grid-search data-grid="standard" class="form-inline" role="form">
+		<form data-grid-search data-grid-reset-filter data-grid="standard" class="form-inline" role="form">
 
 			<div class="form-group">
 
