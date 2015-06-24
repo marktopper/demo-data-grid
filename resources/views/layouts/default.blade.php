@@ -61,7 +61,7 @@
 
 		<script src="{{ URL::to('assets/js/jquery.min.js') }}"></script>
 		<script src="{{ URL::to('assets/js/bootstrap.min.js') }}"></script>
-		<script src="{{ URL::to('assets/js/underscore.js') }}"></script>
+		<script src="{{ URL::to('assets/js/lodash.min.js') }}"></script>
         <script src="{{ URL::to('assets/js/exoskeleton.min.js') }}"></script>
 		<script src="{{ URL::to('assets/js/data-grid.js') }}"></script>
 

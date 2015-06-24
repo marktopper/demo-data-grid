@@ -74,7 +74,7 @@ Route::get('source', function()
 //    $handler = new DatabaseHandler(with(new City)->newQuery(), $settings)
 
     $handler = new DatabaseHandler(new City, $settings);
-    $requestProvider = new ExportProvider(app('request'), null, app('view'));
+    $requestProvider = new ExportProvider(app('request'));
 
     // Or by an Eloquent model
     return DataGrid::make($handler, $requestProvider);

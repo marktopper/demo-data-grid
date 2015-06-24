@@ -118,14 +118,6 @@
         this.applied_filters = [];
 
         this.sort = [];
-        this.current_sort = {
-            column: this.opt.sorting.column || undefined,
-            direction: this.opt.sorting.direction || undefined,
-            index: 0
-        };
-
-        this.default_column = '';
-        this.default_direction = '';
 
         this.is_search_active = false;
         this.search_timeout = null;
@@ -1089,9 +1081,6 @@
                     // Convert sort to string
                     var str = [options.sorting.column, options.delimiter.expression, options.sorting.direction].join('');
                     this.extractSortsFromRoute(str);
-                } else {
-                    this.current_sort.direction = '';
-                    this.current_sort.column    = '';
                 }
 
                 // Build Array For Filters
@@ -1344,8 +1333,7 @@
         /**
          * Sets the sort direction on the given element.
          *
-         * @param  $el          object
-         * @param  direction    string
+         * @param  sorts    array
          * @return void
          */
         setSortDirection: function(sorts) {
@@ -1448,23 +1436,11 @@
             var opt        = this.opt,
                 sort_array = $el.data('grid-sort').split(':'),
                 column     = sort_array[0],
-                direction  = sort_array[1];
+                direction  = sort_array[1] || 'asc';
 
             if (!column) {
                 return;
             }
-
-            //{
-            //    column: 'city',
-            //    direction: 'desc',
-            //    index: 1
-            //    extra: [
-            //        {
-            //            column: 'city',
-            //            direction: 'desc'
-            //        }
-            //    ]
-            //};
 
             // Reset page for infinite grids
             if (opt.pagination.method === 'infinite') {
@@ -1473,11 +1449,14 @@
 
             var sort = _.findWhere(this.sort, {column: column});
 
+            $(this).trigger('dg:sorting', sort);
+
+
             if (!sort) {
 
                 sort = {
                     column: column,
-                    direction: direction || 'asc'
+                    direction: direction
                 };
 
                 if (multi) {
@@ -1487,44 +1466,18 @@
                 }
             } else {
 
-                var reset = false;
+                if (opt.sorting.column === column && sort.direction === opt.sorting.direction || sort.direction === direction) {
+                    sort.direction = (sort.direction === 'asc') ? 'desc' : 'asc';
 
-                if (opt.sorting.column === column) {
-
-                    if (sort.direction === opt.sorting.direction) {
-                        sort.direction = (sort.direction === 'asc') ? 'desc' : 'asc';
-                    } else {
-                        reset = true;
-                    }
-                }
-
-                if (_.isUndefined(direction) || direction === 'asc') {
-                    if (sort.direction === 'asc') {
-                        sort.direction = 'desc'
-                    } else {
-                        reset = true;
-                    }
-                } else {
-                    if (sort.direction === 'desc') {
-                        sort.direction = 'asc';
-                    } else {
-                        reset = true;
-                    }
-                }
-
-                if (reset) {
-                    //reset sort
-                    this.sort = _.reject(this.sort, function(s) {return s.column === sort.column;});
-                } else  {
-
-                    if (multi) {
-                        //find index and update sort
-
-                    } else {
+                    if (!multi) {
                         this.sort = [sort];
                     }
+                } else {
+                    this.sort = _.reject(this.sort, function(s) {return s.column === sort.column;});
                 }
             }
+
+            $(this).trigger('dg:sorted', this.sort);
         },
 
         /**
@@ -1572,16 +1525,11 @@
 
             sort = sort.split(this.opt.delimiter.expression);
 
-            var column    = sort[0],
-                direction = sort[1];
-
             // Setup Sort and put index at 1
-            if (this.current_sort.column !== column) {
-                this.current_sort.index = 1;
-            }
-
-            this.current_sort.column = column;
-            this.current_sort.direction = direction;
+            this.sort.push({
+                column: sort[0],
+                direction: sort[1]
+            });
         },
 
         /**
