@@ -43,8 +43,8 @@
         },
 
         sorting: {
-            //column: undefined,
-            //direction: undefined,
+            column: undefined,
+            direction: undefined,
             asc_class: 'asc',
             desc_class: 'desc'
         },
@@ -117,17 +117,18 @@
 
         this.applied_filters = [];
 
-        this.default_column = '';
-        this.default_direction = '';
-
-        this.is_search_active = false;
-        this.search_timeout = null;
-
+        this.sort = [];
         this.current_sort = {
             column: this.opt.sorting.column || undefined,
             direction: this.opt.sorting.direction || undefined,
             index: 0
         };
+
+        this.default_column = '';
+        this.default_direction = '';
+
+        this.is_search_active = false;
+        this.search_timeout = null;
 
         this.pagination = {
             page_index: 1,
@@ -873,7 +874,7 @@
 
             this.$body.on('click', '[data-grid-reset-filter]:not(form)' + grid + ',' + grid + ' [data-grid-reset-filter]:not(form)', $.proxy(this.onFilterUnapply, this));
 
-            this.$body.on('click', '[data-grid-sort]' + grid + ',' + grid + ' [data-grid-sort]', $.proxy(this.onSort, this));
+            this.$body.on('click', '[data-grid-sort]:not([data-grid-filter])' + grid + ',' + grid + ' [data-grid-sort]:not([data-grid-filter])', $.proxy(this.onSort, this));
             this.$body.on('click', '[data-grid-page]' + grid + ',' + grid + ' [data-grid-page]', $.proxy(this.onPaginate, this));
             this.$body.on('click', '[data-grid-throttle]' + grid + ',' + grid + ' [data-grid-throttle]', $.proxy(this.onThrottle, this));
             this.$body.on('click', '[data-grid-download]' + grid + ',' + grid + ' [data-grid-download]', $.proxy(this.onDownload, this));
@@ -967,9 +968,9 @@
         onSort: function(e) {
 
             e.preventDefault();
-            var elem = $(e.currentTarget);
+            var elem    = $(e.currentTarget);
 
-            this.extractSortsFromClick(elem);
+            this.extractSortsFromClick(elem, e.shiftKey);
             this.refresh();
         },
 
@@ -1077,6 +1078,8 @@
                 } else {
                     this.pagination.page_index = 1;
                 }
+
+                //TODO Reverse loop through route and parse sorts
 
                 if ((/desc$/g.test(last_item)) || (/asc$/g.test(last_item))) {
                     this.extractSortsFromRoute(last_item);
@@ -1345,25 +1348,29 @@
          * @param  direction    string
          * @return void
          */
-        setSortDirection: function($el, direction) {
-
-            $(this).trigger('dg:sorting', this);
+        setSortDirection: function(sorts) {
 
             var grid        = this.grid,
-                options     = this.opt,
-                $sorts      = $('[data-grid-sort]' + grid + ',' + grid + ' [data-grid-sort]'),
-                ascClass    = options.sorting.asc_class,
-                descClass   = options.sorting.desc_class,
-                remove      = direction === 'asc' ? descClass : ascClass,
-                add         = direction === 'asc' ? ascClass : descClass;
+                ascClass    = this.opt.sorting.asc_class,
+                descClass   = this.opt.sorting.desc_class;
 
+            //$(this).trigger('dg:sorting', this);
             // Remove All Classes from other sorts
-            $sorts.not($el).removeClass(ascClass);
-            $sorts.not($el).removeClass(descClass);
+            $('[data-grid-sort]:not([data-grid-filter])' + grid + ',' + grid + ' [data-grid-sort]:not([data-grid-filter])')
+                .removeClass(ascClass)
+                .removeClass(descClass);
 
-            $el.removeClass(remove).addClass(add);
+            _.each(sorts, $.proxy(function (sort) {
 
-            $(this).trigger('dg:sorted', this);
+                var remove  = sort.direction === 'asc' ? descClass : ascClass,
+                    add     = sort.direction === 'asc' ? ascClass : descClass;
+
+                $('[data-grid-sort^="' + sort.column + '"]' + grid + ',' + grid + ' [data-grid-sort^="' + sort.column + '"]')
+                    .removeClass(remove).addClass(add);
+
+            }, this));
+
+            //$(this).trigger('dg:sorted', this);
         },
 
         resetBeforeApply: function($filter) {
@@ -1430,54 +1437,102 @@
          * Extracts sorts from click.
          *
          * @param  $el      object
+         * @param  multi    bool
          * @return void
          */
-        extractSortsFromClick: function($el) {
+        extractSortsFromClick: function($el, multi) {
 
             // TODO Refactor to unify method
             // TODO Fix sort reset logic
 
-            var sort_array = $el.data('grid-sort').split(':'),
-                direction  = 'asc';
+            var opt        = this.opt,
+                sort_array = $el.data('grid-sort').split(':'),
+                column     = sort_array[0],
+                direction  = sort_array[1];
+
+            if (!column) {
+                return;
+            }
+
+            //{
+            //    column: 'city',
+            //    direction: 'desc',
+            //    index: 1
+            //    extra: [
+            //        {
+            //            column: 'city',
+            //            direction: 'desc'
+            //        }
+            //    ]
+            //};
 
             // Reset page for infinite grids
-            if (this.opt.pagination.method === 'infinite') {
+            if (opt.pagination.method === 'infinite') {
                 this.goToPage(1);
             }
 
-            if (this.current_sort.column === sort_array[0] && this.current_sort.index < 3) {
-                this.current_sort.index++;
-            } else {
-                if (sort_array[0] !== this.default_column && this.default_column !== '') {
-                    this.current_sort.index = 1;
+            var sort = _.findWhere(this.sort, {column: column});
+
+            if (!sort) {
+
+                sort = {
+                    column: column,
+                    direction: direction || 'asc'
+                };
+
+                if (multi) {
+                    this.sort.push(sort);
                 } else {
-                    this.current_sort.index = 3;
+                    this.sort = [sort];
+                }
+            } else {
+
+                var reset = false;
+
+                if (opt.sorting.column === column) {
+
+                    if (sort.direction === opt.sorting.direction) {
+                        sort.direction = (sort.direction === 'asc') ? 'desc' : 'asc';
+                    } else {
+                        reset = true;
+                    }
+                }
+
+                if (_.isUndefined(direction) || direction === 'asc') {
+                    if (sort.direction === 'asc') {
+                        sort.direction = 'desc'
+                    } else {
+                        reset = true;
+                    }
+                } else {
+                    if (sort.direction === 'desc') {
+                        sort.direction = 'asc';
+                    } else {
+                        reset = true;
+                    }
+                }
+
+                if (reset) {
+                    //reset sort
+                    this.sort = _.reject(this.sort, function(s) {return s.column === sort.column;});
+                } else  {
+
+                    if (multi) {
+                        //find index and update sort
+
+                    } else {
+                        this.sort = [sort];
+                    }
                 }
             }
+        },
 
-            if (sort_array[0] === this.default_column && this.default_column !== '') {
-                this.current_sort.index = 1;
-            }
-
-            if (!_.isUndefined(sort_array[1])) {
-                direction = sort_array[1];
-            }
-
-            if (sort_array[0] === this.current_sort.column) {
-                if (this.current_sort.direction === 'asc' && this.current_sort.index !== 3) {
-                    this.current_sort.direction = 'desc';
-                } else if (this.current_sort.index !== 3) {
-                    this.current_sort.direction = 'asc';
-                } else {
-                    this.current_sort.direction = '';
-                }
-            } else if (sort_array[0] === this.default_column && !_.isEmpty(this.default_column)) {
-                this.current_sort.column = this.default_column;
-                this.current_sort.direction = (this.default_direction === 'asc' ? 'desc' : 'asc');
-            } else {
-                this.current_sort.column = sort_array[0];
-                this.current_sort.direction = direction;
-            }
+        /**
+         * Sets sort column and direction
+         *
+         * @param sort_array
+         */
+        setSort: function(sort_array) {
         },
 
         /**
@@ -1589,14 +1644,17 @@
          */
         buildSortFragment: function() {
 
-            var column          = this.current_sort.column,
-                direction       = this.current_sort.direction,
-                delimiter       = this.opt.delimiter.expression;
+            var delimiter       = this.opt.delimiter.expression;
 
-            if (!_.isEmpty(column) && !_.isEmpty(direction)) {
-                if (column !== this.opt.sorting.column || direction !== this.opt.sorting.direction) {
-                    return [column, delimiter, direction].join('');
+            var sorts = _.compact(_.map(this.sort, $.proxy(function(sort) {
+                if (sort.column !== this.opt.sorting.column || sort.direction !== this.opt.sorting.direction) {
+                    // TODO Extra sorts
+                    return [sort.column, delimiter, sort.direction].join('');
                 }
+            }, this)));
+
+            if (sorts.length) {
+                return sorts.join('/');
             }
         },
 
@@ -1698,22 +1756,7 @@
                 layout[action](data);
             }, this));
 
-            if (response.sort !== '') {
-
-                var $sort = $('[data-grid-sort^="' + response.sort + '"]' + this.grid + ',' + this.grid + ' [data-grid-sort^="' + response.sort + '"]');
-
-                if (this.buildSortFragment()) {
-                    this.current_sort.column = response.sort;
-                    this.current_sort.direction = response.direction;
-                }
-
-                if (_.isEmpty(this.opt.sorting.column)) {
-                    this.default_column = response.default_column;
-                    this.default_direction = response.direction;
-                }
-
-                this.setSortDirection($sort, response.direction);
-            }
+            this.setSortDirection(response.sort);
 
             this.hideLoader();
             this.is_search_active = false;
@@ -1765,12 +1808,13 @@
                 }
             }, this));
 
-            if (!_.isEmpty(this.current_sort.column) && !_.isEmpty(this.current_sort.direction)) {
-                params.sort = this.current_sort.column;
-                params.direction = this.current_sort.direction;
-            } else if (!_.isEmpty(this.opt.sorting.column) && !_.isEmpty(this.opt.sorting.direction)) {
-                params.sort = this.opt.sorting.column;
-                params.direction = this.opt.sorting.direction;
+            if (!_.isEmpty(this.sort)) {
+                params.sort = _.map(this.sort, $.proxy(function(s) {
+                    return {
+                        column: s.column,
+                        direction: s.direction
+                    }
+                }, this));
             }
 
             if (download) {
@@ -1941,9 +1985,7 @@
             this.applied_filters = [];
 
             // Sort
-            this.current_sort.index = 0;
-            this.current_sort.direction = '';
-            this.current_sort.column = '';
+            this.sort = [];
 
             // Pagination
             this.pagination.page_index = 1;

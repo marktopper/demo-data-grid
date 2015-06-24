@@ -12,6 +12,9 @@
 */
 
 use App\City;
+use Cartalyst\DataGrid\DataGrid;
+use Cartalyst\DataGrid\Export\ExportProvider;
+use Cartalyst\DataGrid\Laravel\DataHandlers\DatabaseHandler;
 
 Route::get('/', function()
 {
@@ -56,17 +59,23 @@ Route::get('source', function()
     );
 
     $settings = array(
-        'sort'        => 'country',
-        'direction'   => 'asc',
+        'columns'     => $columns,
+        'sort'        => [
+            'column'    => 'country',
+            'direction' => 'asc',
+        ],
         'max_results' => 20,
     );
 
-    // // Initiate by a database query
-    // return DataGrid::make(DB::table('cities'), $columns, $settings);
+    // Initiate by a database query
+//    $handler = new DatabaseHandler(DB::table('cities'), $settings);
 
-    // // Or by an Eloquent model query
-    // return DataGrid::make(with(new City)->newQuery(), $columns, $settings);
+    // Or by an Eloquent model query
+//    $handler = new DatabaseHandler(with(new City)->newQuery(), $settings)
+
+    $handler = new DatabaseHandler(new City, $settings);
+    $requestProvider = new ExportProvider(app('request'), null, app('view'));
 
     // Or by an Eloquent model
-    return DataGrid::make(new City, $columns, $settings);
+    return DataGrid::make($handler, $requestProvider);
 });
