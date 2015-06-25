@@ -16,13 +16,11 @@ use Cartalyst\DataGrid\DataGrid;
 use Cartalyst\DataGrid\Export\ExportProvider;
 use Cartalyst\DataGrid\Laravel\DataHandlers\DatabaseHandler;
 
-Route::get('/', function()
-{
+Route::get('/', function () {
     return view('home');
 });
 
-Route::get('standard', function()
-{
+Route::get('standard', function () {
     return view('standard');
 });
 
@@ -31,23 +29,19 @@ Route::get('standard', function()
 //    return view('pushstate');
 //});
 
-Route::get('semantic{hash}', function()
-{
+Route::get('semantic{hash}', function () {
     return view('semantic');
 })->where('hash', '(.*)?');
 
-Route::get('infinite', function()
-{
+Route::get('infinite', function () {
     return view('infinite');
 });
 
-Route::get('group', function()
-{
+Route::get('group', function () {
     return view('group');
 });
 
-Route::get('source', function()
-{
+Route::get('source', function () {
 //    dd(Input::all());
     $columns = array(
         'id',
@@ -59,9 +53,9 @@ Route::get('source', function()
     );
 
     $settings = array(
-        'columns'     => $columns,
-        'sort'        => [
-            'column'    => 'country',
+        'columns' => $columns,
+        'sort' => [
+            'column' => 'country',
             'direction' => 'asc',
         ],
         'max_results' => 20,

@@ -1071,17 +1071,24 @@
                     this.pagination.page_index = 1;
                 }
 
-                //TODO Reverse loop through route and parse sorts
+                var has_sorts = false;
 
-                if ((/desc$/g.test(last_item)) || (/asc$/g.test(last_item))) {
+                // Loop through the route items and parse sorts
+                while ((/desc$/g.test(last_item)) || (/asc$/g.test(last_item))) {
                     this.extractSortsFromRoute(last_item);
+                    has_sorts = true;
                     // Remove Sort From parsed_route
                     parsed_route = parsed_route.splice(0, (parsed_route.length - 1));
-                } else if (options.sorting.column && options.sorting.direction) {
+                    last_item = parsed_route[(parsed_route.length - 1)];
+                }
+
+                if (!has_sorts && options.sorting.column && options.sorting.direction) {
                     // Convert sort to string
                     var str = [options.sorting.column, options.delimiter.expression, options.sorting.direction].join('');
                     this.extractSortsFromRoute(str);
                 }
+
+                this.sort = this.sort.reverse();
 
                 // Build Array For Filters
                 if (parsed_route.length) {
