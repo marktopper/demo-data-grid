@@ -14,6 +14,7 @@ group
 @section('scripts')
 <script>
 $(function() {
+
 	// Setup DataGrid
 	var grid = $.datagrid('group', {
         source: '{{ URL::to('source') }}',

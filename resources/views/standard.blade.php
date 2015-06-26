@@ -73,13 +73,11 @@ $(function() {
             'max': 100000
         },
         format: {
-            to: function(value)
-            {
+            to: function(value) {
                 return parseInt(value);
             },
 
-            from: function(value)
-            {
+            from: function(value) {
                 return parseInt(value);
             }
         }
@@ -92,10 +90,8 @@ $(function() {
     /**
 	 * DEMO ONLY EVENTS
 	 */
-	$('[data-per-page]').on('change', function()
-	{
+	$('[data-per-page]').on('change', function() {
 		grid.setThrottle($(this).val());
-
 		grid.refresh();
 	});
 });

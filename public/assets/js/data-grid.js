@@ -45,6 +45,7 @@
         sorting: {
             column: undefined,
             direction: undefined,
+            delimiter: ',',
             asc_class: 'asc',
             desc_class: 'desc'
         },
@@ -1071,18 +1072,14 @@
                     this.pagination.page_index = 1;
                 }
 
-                var has_sorts = false;
-
-                // Loop through the route items and parse sorts
-                while ((/desc$/g.test(last_item)) || (/asc$/g.test(last_item))) {
+                // Parse sorts
+                if ((/desc$/g.test(last_item)) || (/asc$/g.test(last_item))) {
                     this.extractSortsFromRoute(last_item);
-                    has_sorts = true;
+
                     // Remove Sort From parsed_route
                     parsed_route = parsed_route.splice(0, (parsed_route.length - 1));
                     last_item = parsed_route[(parsed_route.length - 1)];
-                }
-
-                if (!has_sorts && options.sorting.column && options.sorting.direction) {
+                } else if (options.sorting.column && options.sorting.direction) {
                     // Convert sort to string
                     var str = [options.sorting.column, options.delimiter.expression, options.sorting.direction].join('');
                     this.extractSortsFromRoute(str);
@@ -1442,8 +1439,8 @@
 
             var opt        = this.opt,
                 sort_array = $el.data('grid-sort').split(':'),
-                column     = sort_array[0],
-                direction  = sort_array[1] || 'asc';
+                column     = _.trim(sort_array[0]),
+                direction  = _.trim(sort_array[1]) || 'asc';
 
             if (!column) {
                 return;
@@ -1525,18 +1522,21 @@
         /**
          * Extracts sorts from route.
          *
-         * @param  sort string
+         * @param  sort_route  string
          * @return void
          */
-        extractSortsFromRoute: function(sort) {
+        extractSortsFromRoute: function(sort_route) {
 
-            sort = sort.split(this.opt.delimiter.expression);
+            var sorts = sort_route.split(this.opt.sorting.delimiter);
 
-            // Setup Sort and put index at 1
-            this.sort.push({
-                column: sort[0],
-                direction: sort[1]
-            });
+            _.each(sorts, $.proxy(function(sort) {
+                sort = sort.split(this.opt.delimiter.expression);
+
+                this.sort.push({
+                    column: _.trim(sort[0]),
+                    direction: _.trim(sort[1])
+                });
+            }, this));
         },
 
         /**
@@ -1603,13 +1603,12 @@
 
             var sorts = _.compact(_.map(this.sort, $.proxy(function(sort) {
                 if (sort.column !== this.opt.sorting.column || sort.direction !== this.opt.sorting.direction) {
-                    // TODO Extra sorts
                     return [sort.column, delimiter, sort.direction].join('');
                 }
             }, this)));
 
             if (sorts.length) {
-                return sorts.join('/');
+                return sorts.join(this.opt.sorting.delimiter);
             }
         },
 
