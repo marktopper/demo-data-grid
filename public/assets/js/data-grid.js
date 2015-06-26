@@ -174,8 +174,9 @@
         /**
          * Set data-grid layout settings
          *
-         * @param name      string|object
-         * @param options   object
+         * @param  name  string|object
+         * @param  options  object
+         * @return DataGrid
          */
         setLayout: function(name, options) {
 
@@ -227,7 +228,7 @@
 
             }, this));
 
-            return this
+            return this;
         },
 
         initRouter: function() {
@@ -275,8 +276,9 @@
         /**
          * jQuery.on wrapper for dg:event callbacks
          *
-         * @param event
-         * @param callback
+         * @param  event
+         * @param  callback
+         * @return DataGrid
          */
         on: function(event, callback) {
 
@@ -289,6 +291,12 @@
             return this;
         },
 
+        /**
+         * Binds single callback.
+         *
+         * @param  event
+         * @param  callback
+         */
         bindCallback: function(event, callback) {
             $(this).on(event, $.proxy(function() {
                 callback.apply(this, _.rest(arguments));
@@ -302,6 +310,9 @@
 
             term: {
 
+                /**
+                 * Initialises filter listeners.
+                 */
                 listeners: function() {
                     var term_selector = '[data-grid-filter]' + this.grid + ':not([data-grid-type="range"]),' + this.grid + ' [data-grid-filter]:not([data-grid-type="range"])';
 
@@ -311,6 +322,9 @@
                     this.$body.find('select[data-grid-group]' + this.grid + ',' + this.grid + ' select[data-grid-group]').on('change', $.proxy(this._onSelectFilter, this));
                 },
 
+                /**
+                 * Extracts filter data from url fragment.
+                 */
                 extract: function(fragment) {
 
                     var $filter = $('[data-grid-filter="' + fragment + '"]' + this.grid + ',' + this.grid + ' [data-grid-filter="' + fragment + '"]');
@@ -324,10 +338,16 @@
                     return true;
                 },
 
+                /**
+                 * Builds url fragment from filter data.
+                 */
                 buildFragment: function(filter) {
                     return filter.name;
                 },
 
+                /**
+                 * Builds ajax request params from filter data.
+                 */
                 buildParams: function(filter) {
 
                     return _.map(filter.query, $.proxy(function(q) {
@@ -345,7 +365,7 @@
                 },
 
                 /**
-                 * Handle filter click
+                 * Handles filter click.
                  */
                 _onFilter: function(e) {
 
@@ -364,9 +384,7 @@
                 },
 
                 /**
-                 * Handle select filter change
-                 *
-                 * @return void
+                 * Handles select filter change.
                  */
                 _onSelectFilter: function(e) {
 
@@ -393,6 +411,10 @@
                 apply: function($filter, refresh) {
 
                     refresh = refresh !== undefined ? refresh : true;
+
+                    if (!_.isEmpty($filter.data('grid-sort'))) {
+                        this.setSort(this._parseSort($filter.data('grid-sort')));
+                    }
 
                     if ($filter.data('grid-filter')) {
                         this.removeFilter($filter.data('grid-filter'));
@@ -430,28 +452,29 @@
 
                 _parseQuery: function(query_raw) {
 
-                    return _.map(query_raw.split(this.opt.delimiter.query), $.proxy(function(expression) {
+                    return _.compact(_.map(query_raw.split(this.opt.delimiter.query), $.proxy(function(expression) {
 
-                        expression = $.trim(expression);
+                        expression = _.trim(expression);
 
-                        if (expression.length) {
-
-                            var query = expression.split(this.opt.delimiter.expression);
-
-                            if (query.length === 3) {
-                                return {
-                                    column: query[0],
-                                    value: this._cleanup(query[2]),
-                                    operator: this.checkOperator(query[1]) ? query[1] : null
-                                };
-                            } else if (query.length === 2) {
-                                return {
-                                    column: query[0],
-                                    value: this._cleanup(query[1])
-                                };
-                            }
+                        if (_.isEmpty(expression)) {
+                            return;
                         }
-                    }, this));
+
+                        var query = expression.split(this.opt.delimiter.expression);
+
+                        if (query.length === 3) {
+                            return {
+                                column: query[0],
+                                value: this._cleanup(query[2]),
+                                operator: this.checkOperator(query[1]) ? query[1] : null
+                            };
+                        } else if (query.length === 2) {
+                            return {
+                                column: query[0],
+                                value: this._cleanup(query[1])
+                            };
+                        }
+                    }, this)));
                 }
             },
 
@@ -582,6 +605,10 @@
                     this.removeFilter(name);
                     this.resetBeforeApply($filter);
 
+                    if (!_.isEmpty($filter.data('grid-sort'))) {
+                        this.setSort(this._parseSort($filter.data('grid-sort')));
+                    }
+
                     var date_format = _.isUndefined($filter.data('grid-date-format')) ?
                                             null : ($filter.data('grid-date-format') || this.opt.formats.date);
 
@@ -711,8 +738,6 @@
                     // Remove live search filter
                     this.applied_filters = _.reject(this.applied_filters, function(f) {return f.type === 'live';});
 
-                    // TODO Reset search keywords
-
                     var filter = {
                         name: 'search:' + column + ':' + encodeURI(value).toLowerCase().replace(/%/g, ''),
                         type: 'search',
@@ -726,6 +751,11 @@
                     $input.val('').data('old', '');
 
                     this.resetBeforeApply($form);
+
+                    if (!_.isEmpty($form.data('grid-sort'))) {
+                        this.setSort(this._parseSort($form.data('grid-sort')));
+                    }
+
                     this.applyFilter(filter);
 
                     this.goToPage(1);
@@ -1435,7 +1465,6 @@
         extractSortsFromClick: function($el, multi) {
 
             // TODO Refactor to unify method
-            // TODO Fix sort reset logic
 
             var opt        = this.opt,
                 sort_array = $el.data('grid-sort').split(':'),
@@ -1454,7 +1483,6 @@
             var sort = _.findWhere(this.sort, {column: column});
 
             $(this).trigger('dg:sorting', sort);
-
 
             if (!sort) {
 
@@ -1485,11 +1513,32 @@
         },
 
         /**
-         * Sets sort column and direction
+         * Parses sort expressions.
          *
-         * @param sort_array
+         * @param sort_raw
+         * @returns array
+         * @private
          */
-        setSort: function(sort_array) {
+        _parseSort: function(sort_raw) {
+
+            return _.compact(_.map(sort_raw.split(this.opt.delimiter.query), $.proxy(function(expression) {
+
+                var sort = expression.split(this.opt.delimiter.expression);
+
+                if (_.isEmpty(_.trim(sort))) {
+                    return;
+                }
+
+                return {
+                    column: _.trim(sort[0]),
+                    direction: _.trim(sort[1]) || 'asc'
+                };
+            }, this)));
+        },
+
+        setSort: function (sorts) {
+            sorts = (!_.isEmpty(sorts)) ? sorts : [];
+            this.sort = sorts;
         },
 
         /**
@@ -1599,7 +1648,7 @@
          */
         buildSortFragment: function() {
 
-            var delimiter       = this.opt.delimiter.expression;
+            var delimiter = this.opt.delimiter.expression;
 
             var sorts = _.compact(_.map(this.sort, $.proxy(function(sort) {
                 if (sort.column !== this.opt.sorting.column || sort.direction !== this.opt.sorting.direction) {
@@ -1671,7 +1720,7 @@
         /**
          * Handles ajax response rendering
          *
-         * @param response  object
+         * @param  response  object
          */
         render: function(response) {
 
@@ -1803,10 +1852,10 @@
         /**
          * Builds regular pagination.
          *
-         * @param  page     int
-         * @param  next     int
-         * @param  prev     int
-         * @param  total    int
+         * @param  page  int
+         * @param  next  int
+         * @param  prev  int
+         * @param  total  int
          * @return object
          */
         buildRegularPagination: function(page, next, prev, total) {
@@ -1842,9 +1891,9 @@
         /**
          * Builds the infinite pagination.
          *
-         * @param  page     int
-         * @param  next     int
-         * @param  total    int
+         * @param  page  int
+         * @param  next  int
+         * @param  total  int
          * @return object
          */
         buildInfinitePagination: function(page, next, total) {
@@ -1989,6 +2038,7 @@
         /**
          * Check for operators.
          *
+         * @return bool
          */
         checkOperator: function(value) {
             return />|<|!=|=|<=|>=|<>/.test(value);
@@ -1997,6 +2047,7 @@
         /**
          * Check for date.
          *
+         * @return bool
          */
         checkDate: function(value) {
             return /[0-9]{4}-[0-9]{2}-[0-9]{2}/g.test(value);
@@ -2024,7 +2075,7 @@
         /**
          * Sets the throttle.
          *
-         * @param  value    int
+         * @param  value  int
          * @return void
          */
         setThrottle: function(value) {
@@ -2043,7 +2094,7 @@
         /**
          * Sets the threshold.
          *
-         * @param  value    int
+         * @param  value  int
          * @return void
          */
         setThreshold: function(value) {
@@ -2054,7 +2105,7 @@
     /**
      * Data grid init.
      *
-     * @param  grid     string
+     * @param  grid  string
      * @param  options  object
      * @return DataGrid
      */
