@@ -1115,8 +1115,6 @@
                     this.extractSortsFromRoute(str);
                 }
 
-                this.sort = this.sort.reverse();
-
                 // Build Array For Filters
                 if (parsed_route.length) {
                     if (this.opt.multiple) {

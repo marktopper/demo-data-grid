@@ -15,6 +15,7 @@ use App\City;
 use Cartalyst\DataGrid\DataGrid;
 use Cartalyst\DataGrid\Export\ExportProvider;
 use Cartalyst\DataGrid\Laravel\DataHandlers\DatabaseHandler;
+use Faker\Factory as Faker;
 
 Route::get('/', function () {
     return view('home');
@@ -61,6 +62,24 @@ Route::get('source', function () {
         'max_results' => 20,
     );
 
+//    $array = [];
+//
+//    $faker = Faker::create();
+//    foreach (range(1, 300) as $index)
+//    {
+//        $int = rand(strtotime("- 1 year"), time());
+//        $array[] = [
+//            'country'                  => $faker->country,
+//            'subdivision'              => $faker->state,
+//            'city'                     => $faker->city,
+//            'population'               => $faker->randomNumber(5),
+//            'country_code'             => $faker->countryCode,
+//            'country_subdivision_code' => $faker->stateAbbr,
+//            'created_at'               => date("Y-m-d H:i:s", $int),
+//            'updated_at'               => date("Y-m-d H:i:s", $int),
+//        ];
+//    }
+
     // Initiate by a database query
 //    $handler = new DatabaseHandler(DB::table('cities'), $settings);
 
@@ -68,6 +87,9 @@ Route::get('source', function () {
 //    $handler = new DatabaseHandler(with(new City)->newQuery(), $settings)
 
     $handler = new DatabaseHandler(new City, $settings);
+
+//    $handler = new \Cartalyst\DataGrid\DataHandlers\CollectionHandler($array, $settings);
+
     $requestProvider = new ExportProvider(app('request'));
 
     // Or by an Eloquent model
