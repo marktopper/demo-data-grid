@@ -12,7 +12,7 @@
 */
 
 use App\City;
-use Cartalyst\DataGrid\DataGrid;
+use DataGrid;
 use Cartalyst\DataGrid\Export\ExportProvider;
 use Cartalyst\DataGrid\Laravel\DataHandlers\DatabaseHandler;
 use Faker\Factory as Faker;
