@@ -12,7 +12,7 @@
 */
 
 use App\City;
-use Cartalyst\DataGrid\Export\ExportProvider;
+use Cartalyst\DataGrid\Export\Providers\ExportProvider;
 use Cartalyst\DataGrid\Laravel\DataHandlers\DatabaseHandler;
 use Cartalyst\DataGrid\Laravel\Facades\DataGrid;
 use Faker\Factory as Faker;
@@ -44,23 +44,23 @@ Route::get('group', function () {
 
 Route::get('source', function () {
 //    dd(Input::all());
-    $columns = array(
+    $columns = [
         'id',
         'country',
         'subdivision',
         'city',
         'population',
         'created_at',
-    );
+    ];
 
-    $settings = array(
+    $settings = [
         'columns' => $columns,
         'sort' => [
             'column' => 'country',
             'direction' => 'asc',
         ],
         'max_results' => 20,
-    );
+    ];
 
 //    $array = [];
 //
