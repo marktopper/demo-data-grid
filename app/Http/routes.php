@@ -12,9 +12,9 @@
 */
 
 use App\City;
-use DataGrid;
 use Cartalyst\DataGrid\Export\ExportProvider;
 use Cartalyst\DataGrid\Laravel\DataHandlers\DatabaseHandler;
+use Cartalyst\DataGrid\Laravel\Facades\DataGrid;
 use Faker\Factory as Faker;
 
 Route::get('/', function () {
