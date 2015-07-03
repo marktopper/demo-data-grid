@@ -11,7 +11,7 @@
 |
 */
 
-use App\City;
+use App\Songs;
 use Cartalyst\DataGrid\Export\Providers\ExportProvider;
 use Cartalyst\DataGrid\Laravel\DataHandlers\DatabaseHandler;
 use Cartalyst\DataGrid\Laravel\Facades\DataGrid;
@@ -24,11 +24,6 @@ Route::get('/', function () {
 Route::get('standard', function () {
     return view('standard');
 });
-
-Route::get('songs', function () {
-    return view('songs');
-});
-
 
 //Route::get('pushstate', function()
 //{
@@ -47,7 +42,7 @@ Route::get('group', function () {
     return view('group');
 });
 
-Route::get('songsSource', function () {
+Route::get('songs', function () {
 //    dd(Input::all());
     $columns = array(
         'track_id',

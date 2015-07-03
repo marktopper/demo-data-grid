@@ -23,7 +23,7 @@ $(function() {
 
     // Setup DataGrid
     var grid = $.datagrid('standard', {
-        source: '{{ URL::to('songsSource') }}',
+        source: '{{ URL::to('songs') }}',
         pagination: {
             throttle: 20
         },
@@ -306,8 +306,8 @@ $(function() {
 {{-- Pagination --}}
 <footer id="pagination" data-grid-layout="pagination" data-grid="standard"></footer>
 
-@include('templates/standard/results')
-@include('templates/standard/filters')
-@include('templates/standard/pagination')
+@include('templates/music/results')
+@include('templates/music/filters')
+@include('templates/music/pagination')
 
 @stop
