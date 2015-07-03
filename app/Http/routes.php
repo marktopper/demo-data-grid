@@ -25,6 +25,11 @@ Route::get('standard', function () {
     return view('standard');
 });
 
+Route::get('songs', function () {
+    return view('songs');
+});
+
+
 //Route::get('pushstate', function()
 //{
 //    return view('pushstate');
