@@ -42,6 +42,30 @@ Route::get('group', function () {
     return view('group');
 });
 
+Route::get('songsSource', function () {
+//    dd(Input::all());
+    $columns = array(
+        'track_id',
+        'title',
+        'duration',
+    );
+
+    $settings = array(
+        'columns' => $columns,
+        'sort' => [
+            'column' => 'track_id',
+            'direction' => 'asc',
+        ],
+        'max_results' => 100,
+    );
+
+    $handler = new DatabaseHandler(new Songs, $settings);
+
+    // Or by an Eloquent model
+    return DataGrid::make($handler);
+});
+
+
 Route::get('source', function () {
 //    dd(Input::all());
     $columns = [

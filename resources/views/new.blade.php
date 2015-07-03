@@ -23,7 +23,7 @@ $(function() {
 
     // Setup DataGrid
     var grid = $.datagrid('standard', {
-        source: '{{ URL::to('source') }}',
+        source: '{{ URL::to('songsSource') }}',
         pagination: {
             throttle: 20
         },
