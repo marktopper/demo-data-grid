@@ -11,7 +11,7 @@
 |
 */
 
-use App\City;
+use App\Songs;
 use Cartalyst\DataGrid\Export\ExportProvider;
 use Cartalyst\DataGrid\Laravel\DataHandlers\DatabaseHandler;
 use Cartalyst\DataGrid\Laravel\Facades\DataGrid;
@@ -21,8 +21,20 @@ Route::get('/', function () {
     return view('home');
 });
 
+Route::get('test', function () {
+    if(DB::connection()->getDatabaseName())
+    {
+       echo "conncted sucessfully to database ".DB::connection()->getDatabaseName();
+    }
+});
+
+
 Route::get('standard', function () {
     return view('standard');
+});
+
+Route::get('new', function () {
+    return view('new');
 });
 
 //Route::get('pushstate', function()
@@ -45,18 +57,15 @@ Route::get('group', function () {
 Route::get('source', function () {
 //    dd(Input::all());
     $columns = array(
-        'id',
-        'country',
-        'subdivision',
-        'city',
-        'population',
-        'created_at',
+        'track_id',
+        'title',
+        'duration',
     );
 
     $settings = array(
         'columns' => $columns,
         'sort' => [
-            'column' => 'country',
+            'column' => 'track_id',
             'direction' => 'asc',
         ],
         'max_results' => 20,
@@ -86,12 +95,12 @@ Route::get('source', function () {
     // Or by an Eloquent model query
 //    $handler = new DatabaseHandler(with(new City)->newQuery(), $settings)
 
-    $handler = new DatabaseHandler(new City, $settings);
+    $handler = new DatabaseHandler(new Songs, $settings);
 
 //    $handler = new \Cartalyst\DataGrid\DataHandlers\CollectionHandler($array, $settings);
 
-    $requestProvider = new ExportProvider(app('request'));
+    //$requestProvider = new ExportProvider(app('request'));
 
     // Or by an Eloquent model
-    return DataGrid::make($handler, $requestProvider);
+    return DataGrid::make($handler);
 });
