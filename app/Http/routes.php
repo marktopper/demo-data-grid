@@ -25,11 +25,6 @@ Route::get('standard', function () {
     return view('standard');
 });
 
-//Route::get('pushstate', function()
-//{
-//    return view('pushstate');
-//});
-
 Route::get('semantic{hash}', function () {
     return view('semantic');
 })->where('hash', '(.*)?');

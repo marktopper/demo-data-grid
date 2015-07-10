@@ -11,7 +11,7 @@ class AppServiceProvider extends ServiceProvider {
 	 */
 	public function boot()
 	{
-		//
+        $this->configureDomPdf();
 	}
 
 	/**
@@ -23,5 +23,23 @@ class AppServiceProvider extends ServiceProvider {
 	{
 		//
 	}
+
+    /**
+     * Configure Dom Pdf.
+     *
+     * @return void
+     */
+    protected function configureDomPdf()
+    {
+        $configFile = base_path() . '/vendor/dompdf/dompdf/dompdf_config.inc.php';
+
+        if ($this->app['files']->exists($configFile)) {
+            if (! dfined('DOMPDF_ENABLE_AUTOLOAD')) {
+                define('DOMPDF_ENABLE_AUTOLOAD', false);
+            }
+
+            require_once $configFile;
+        }
+    }
 
 }
