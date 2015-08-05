@@ -34,7 +34,7 @@ class AppServiceProvider extends ServiceProvider {
         $configFile = base_path() . '/vendor/dompdf/dompdf/dompdf_config.inc.php';
 
         if ($this->app['files']->exists($configFile)) {
-            if (! dfined('DOMPDF_ENABLE_AUTOLOAD')) {
+            if (! defined('DOMPDF_ENABLE_AUTOLOAD')) {
                 define('DOMPDF_ENABLE_AUTOLOAD', false);
             }
 

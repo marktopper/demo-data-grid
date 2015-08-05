@@ -12,6 +12,7 @@
 */
 
 use App\Songs;
+use App\City;
 use Cartalyst\DataGrid\Export\Providers\ExportProvider;
 use Cartalyst\DataGrid\Laravel\DataHandlers\DatabaseHandler;
 use Cartalyst\DataGrid\Laravel\Facades\DataGrid;

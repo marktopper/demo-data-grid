@@ -45,6 +45,7 @@
         sorting: {
             column: undefined,
             direction: undefined,
+            multicolumn: true,
             delimiter: ',',
             asc_class: 'asc',
             desc_class: 'desc'
@@ -115,6 +116,11 @@
         _.each(_.keys(options), $.proxy(function(key) {
             this.opt[key] = (key !== 'layouts') ? _.defaults(options[key], defaults[key]) : options[key];
         }, this));
+
+        var source = $(this.grid + '[data-grid-source],' + this.grid + ' [data-grid-source]');
+        if (source.length && !_.isEmpty(source.data('grid-source'))) {
+            this.opt.source = source.data('grid-source')
+        }
 
         this.applied_filters = [];
 
@@ -593,9 +599,9 @@
                         var $from       = this.$body.find('[data-grid-filter="' + name + '"][data-grid-range="start"]' + this.grid + ',' + this.grid + ' [data-grid-filter="' + name + '"][data-grid-range="start"]'),
                             $to         = this.$body.find('[data-grid-filter="' + name + '"][data-grid-range="end"]' + this.grid + ',' + this.grid + ' [data-grid-filter="' + name + '"][data-grid-range="end"]');
 
-                            column      = $from.data('grid-query').split(delimiter)[0];
-                            from        = $from.is(':input') ? $from.val() : $from.find(':input:first').val() || $from.data('grid-query').split(delimiter)[1];
-                            to          = $to.is(':input') ? $to.val() : $to.find(':input:first').val() || $to.data('grid-query').split(delimiter)[1];
+                        column      = $from.data('grid-query').split(delimiter)[0];
+                        from        = $from.is(':input') ? $from.val() : $from.find(':input:first').val() || $from.data('grid-query').split(delimiter)[1];
+                        to          = $to.is(':input') ? $to.val() : $to.find(':input:first').val() || $to.data('grid-query').split(delimiter)[1];
                     }
 
                     if (_.isEmpty(from) || _.isEmpty(to)) {
@@ -610,7 +616,7 @@
                     }
 
                     var date_format = _.isUndefined($filter.data('grid-date-format')) ?
-                                            null : ($filter.data('grid-date-format') || this.opt.formats.date);
+                        null : ($filter.data('grid-date-format') || this.opt.formats.date);
 
                     if (date_format && window.moment) {
                         from = moment(from).format(date_format);
@@ -649,7 +655,7 @@
 
                     var route   = fragment.split(this.opt.delimiter.expression),
                         $option = $('[data-grid-search]' + this.grid + ',' + this.grid + ' ' + '[data-grid-search]')
-                                    .find('select:not([data-grid-group]) option[value=' + route[0] + ']');
+                            .find('select:not([data-grid-group]) option[value=' + route[0] + ']');
 
                     if (route[0] !== 'all' && !$option.length) {
                         return;
@@ -661,20 +667,20 @@
                         filter = {
                             name: 'search:' + route[0] + ':' + encodeURI(route[2]).toLowerCase().replace(/%/g, ''),
                             type: 'search',
-                            query: {
+                            query: [{
                                 column: route[0],
                                 value: this._cleanup(route[2]),
                                 operator: route[1]
-                            }
+                            }]
                         };
                     } else {
                         filter = {
                             name: 'search:' + route[0] + ':' + encodeURI(route[1]).toLowerCase().replace(/%/g, ''),
                             type: 'search',
-                            query: {
+                            query: [{
                                 column: route[0],
                                 value: this._cleanup(route[1])
-                            }
+                            }]
                         };
                     }
 
@@ -683,12 +689,12 @@
                 },
 
                 buildFragment: function (filter) {
-                    return [filter.query.column, this.opt.delimiter.expression, encodeURI(filter.query.value)].join('');
+                    return [filter.query[0].column, this.opt.delimiter.expression, encodeURI(filter.query[0].value)].join('');
                 },
 
                 buildParams: function (filter) {
 
-                    var q = filter.query, f = {};
+                    var q = filter.query[0], f = {};
                     if ('all' === q.column) {
                         f = (q.operator) ?
                             ['|', q.operator, this._cleanup(q.value), '|'].join('') : this._cleanup(q.value);
@@ -721,7 +727,7 @@
                         column = $select.val() || 'all',
                         value = $.trim($input.val()),
                         old = $input.data('old'),
-                        operator = $form.data('operator');
+                        operator = $form.data('grid-operator');
 
                     this.is_search_active = true;
 
@@ -741,11 +747,11 @@
                     var filter = {
                         name: 'search:' + column + ':' + encodeURI(value).toLowerCase().replace(/%/g, ''),
                         type: 'search',
-                        query: {
+                        query: [{
                             column: column,
                             value: this._cleanup(value),
                             operator: operator
-                        }
+                        }]
                     };
 
                     $input.val('').data('old', '');
@@ -832,11 +838,11 @@
                         var filter = {
                             name: 'live',
                             type: 'live',
-                            query: {
+                            query: [{
                                 column: column,
                                 value: this._cleanup(value),
                                 operator: operator
-                            }
+                            }]
                         };
 
                         $input.data('old', value);
@@ -1236,12 +1242,6 @@
 
             // TODO Avoid re-rendering applied filters on livesearch request
             //if (filter.type !== 'live') {
-            //
-            //    // Render our filters
-            //    this.$filters.html(this.tmpl.filters({
-            //        grid: this,
-            //        filters: _.reject(this.applied_filters, function(f) {return f.type === 'live';})
-            //    }));
             //}
 
             $(this).trigger('dg:applied', filter);
@@ -1268,9 +1268,10 @@
             );
 
             // Check default presets
-            _.each(this.opt.filters, $.proxy(function(name) {
+            _.each(_.keys(this.opt.filters), $.proxy(function(name) {
                 if (_.has(this.opt.filters[name], 'default') && this.opt.filters[name].default) {
-                    var $filter = $('[data-grid-filter="' + name + '"]' + this.grid + ', ' + this.grid + ' [data-grid-filter="' + name + '"]');
+                    var $filter = $('[data-grid-filter="' + name + '"]' + this.grid + ', ' + this.grid + ' [data-grid-filter="' + name + '"]'),
+                        type = this.opt.filters[name].type || 'term';
                     this.filter_types[type].apply.call(this, $filter, false);
                 }
             }, this));
@@ -1462,7 +1463,7 @@
          */
         extractSortsFromClick: function($el, multi) {
 
-            // TODO Refactor to unify method
+            multi = multi && this.opt.sorting.multicolumn;
 
             var opt        = this.opt,
                 sort_array = $el.data('grid-sort').split(':'),

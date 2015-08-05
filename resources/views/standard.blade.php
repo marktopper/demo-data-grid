@@ -35,7 +35,7 @@ $(function() {
             'mexico:large': {
                 type: 'term',
                 label: 'Large Mexico cities',
-                default: false,
+                default: true,
                 query: [
                     {
                         column: 'country',
@@ -130,7 +130,7 @@ $(function() {
 
 			<ul class="dropdown-menu" role="menu" data-grid="standard" data-grid-group="mainfilters" data-grid-reset-group>
 				<li><a href="#" data-grid-filter="country:us" data-grid-query="country:United States" data-grid-sort="subdivision:asc;population:asc" data-grid-label="United States">United States</a></li>
-				<li><a href="#" data-grid-filter-default data-grid-filter="country:canada" data-grid-query="country:Canada" data-grid-label="Canada">Canada</a></li>
+				<li><a href="#" data-grid-filter="country:canada" data-grid-query="country:Canada" data-grid-label="Canada">Canada</a></li>
 				<li><a href="#" data-grid-filter="population_over_10000" data-grid-query="population:>:10000" data-grid-label="population:Population >:10000">Populations > 10000</a></li>
 				<li><a href="#" data-grid-filter="mexico:large">Large Mexico cities</a></li>
 				<li><a href="#" data-grid-filter="population_over_5000" data-grid-query="population:>:5000" data-grid-label="Populations over 5000">Populations > 5000</a></li>
