@@ -137,6 +137,8 @@ return [
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
 
+        Cartalyst\DataGrid\Laravel\DataGridServiceProvider::class,
+
         /*
          * Application Service Providers...
          */
