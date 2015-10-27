@@ -79,12 +79,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:cartalyst/data-grid.git",
-                "reference": "bbde8044c084c8737d8275322cc2f28c8717186e"
+                "reference": "a8046e6161d6fa02a839800ed6d0e082e4848e5b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cartalyst/data-grid/zipball/bbde8044c084c8737d8275322cc2f28c8717186e",
-                "reference": "bbde8044c084c8737d8275322cc2f28c8717186e",
+                "url": "https://api.github.com/repos/cartalyst/data-grid/zipball/a8046e6161d6fa02a839800ed6d0e082e4848e5b",
+                "reference": "a8046e6161d6fa02a839800ed6d0e082e4848e5b",
                 "shasum": ""
             },
             "require": {
@@ -136,7 +136,7 @@
                 "source": "https://github.com/cartalyst/data-grid/tree/feature/4.0",
                 "issues": "https://github.com/cartalyst/data-grid/issues"
             },
-            "time": "2015-10-26 19:04:44"
+            "time": "2015-10-26 21:19:14"
         },
         {
             "name": "cartalyst/data-grid-export",
@@ -208,12 +208,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:cartalyst/data-grid-laravel.git",
-                "reference": "5a8aee4c5f64269e5f3c5288659b82fc376e56cc"
+                "reference": "5b9c0b3ef94666d706a733a580af93c4b53b929a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cartalyst/data-grid-laravel/zipball/5a8aee4c5f64269e5f3c5288659b82fc376e56cc",
-                "reference": "5a8aee4c5f64269e5f3c5288659b82fc376e56cc",
+                "url": "https://api.github.com/repos/cartalyst/data-grid-laravel/zipball/5b9c0b3ef94666d706a733a580af93c4b53b929a",
+                "reference": "5b9c0b3ef94666d706a733a580af93c4b53b929a",
                 "shasum": ""
             },
             "require": {
@@ -236,6 +236,11 @@
             "autoload": {
                 "psr-4": {
                     "Cartalyst\\DataGrid\\Laravel\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Cartalyst\\DataGrid\\Laravel\\Tests\\": "tests/"
                 }
             },
             "license": [
@@ -264,7 +269,7 @@
                 "source": "https://github.com/cartalyst/data-grid-laravel/tree/master",
                 "issues": "https://github.com/cartalyst/data-grid-laravel/issues"
             },
-            "time": "2015-10-26 19:05:18"
+            "time": "2015-10-26 21:48:25"
         },
         {
             "name": "classpreloader/classpreloader",
@@ -718,12 +723,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "a621da2e530a6b2bc99296dd43a83dd39093b4df"
+                "reference": "19077801dbd633cab1284a5cba00fedd0dadf546"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/a621da2e530a6b2bc99296dd43a83dd39093b4df",
-                "reference": "a621da2e530a6b2bc99296dd43a83dd39093b4df",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/19077801dbd633cab1284a5cba00fedd0dadf546",
+                "reference": "19077801dbd633cab1284a5cba00fedd0dadf546",
                 "shasum": ""
             },
             "require": {
@@ -839,7 +844,7 @@
                 "framework",
                 "laravel"
             ],
-            "time": "2015-10-26 07:43:03"
+            "time": "2015-10-26 19:35:30"
         },
         {
             "name": "league/flysystem",
