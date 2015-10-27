@@ -1,0 +1,177 @@
+.search{
+	display:block;
+	width:100%;
+	height:50px;
+
+	position: relative;
+	float:left;
+
+	border:1px solid #ccc;
+
+	border-radius: 4px;
+
+	overflow: hidden;
+}
+
+.search-input{
+	height:48px;
+	width:100%;
+	padding:0 10px 0 10px;
+	margin:0;
+
+	color:#443e40;
+	font-size: 16px;
+
+	outline:0;
+	border:0;
+
+	box-shadow: inset 0 1px 2px #efece2;
+
+}
+
+.search-btn{
+	height:50px; width:15%;
+
+	position: absolute;
+	top:0; right:0;
+	z-index:1;
+
+	border:0;
+	background:#821d52;
+
+	color:#faf8f2;
+
+	box-shadow: inset 0 1px 0 #a72568;
+}
+
+.search-btn:hover{
+	background:#a72568;
+}
+
+.content{
+	margin-top:20px;
+}
+
+.col-left{
+	width:25%;
+	height:100%;
+	float:left;
+
+	padding-right:15px;
+}
+
+.module{
+	margin-bottom:10px;
+	border-bottom: 1px solid #ddd;
+}
+
+.module h3{
+	padding-bottom:15px;
+
+	font-size: 18px;
+	letter-spacing: 1px;
+	font-weight: 100;
+
+	border-bottom: 1px solid #ddd;
+}
+
+.module ul{
+	list-style: none;
+	margin:10px 0;
+}
+
+.module li{
+	display:block;
+	padding:8px;
+	cursor: pointer;
+}
+
+.applied li{
+	display:inline-block;
+	padding:8px;
+	margin:8px;
+
+	text-decoration: none;
+	color:#443e40;
+
+	border:1px solid #ccc;
+	border-radius: 4px;
+	box-shadow: 0 1px 1px #ddd;
+
+	cursor: pointer;
+}
+
+.applied li span{
+	color:red;
+	font-size: 16px;
+	margin-left:8px;
+}
+
+.applied-filters { list-style: none; padding: 0; margin-top: 20px; }
+
+.col-right{
+	width:75%;
+	height:100%;
+	float:left;
+
+	position: relative;
+}
+
+
+.grid{ list-style: none; padding: 0; }
+
+.grid li .wrapper {
+	height:200px;
+
+	background:#fff;
+
+	margin-bottom: 25px;
+
+	border:1px solid #ddd;
+	border-radius: 2px;
+
+	text-align: center;
+}
+
+.grid li h2{
+	margin-bottom:18px;
+}
+
+.grid li h2 small{
+	display:block;
+
+	font-weight: 200;
+	color:#ccc;
+}
+
+.goto-page{
+	display:block;
+	padding:8px;
+
+	border-radius: 3px;
+	border:1px solid #ccc;
+	background:#f2f2f2;
+
+	text-align: center;
+	text-decoration: none;
+	font-size:18px;
+	color:#821d52;
+
+	margin-bottom: 25px;
+}
+
+.goto-page:hover{
+	color:#a72568;
+}
+
+.cf:before,
+.cf:after {
+    content: " "; /* 1 */
+    display: table; /* 2 */
+}
+.cf:after {
+    clear: both;
+}
+.cf {
+    *zoom: 1;
+}
