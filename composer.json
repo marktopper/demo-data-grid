@@ -52,13 +52,13 @@
         ],
         "post-update-cmd": [
             "php artisan optimize",
-            "php artisan vendor:publish --provider='Cartalyst\\DataGrid\\Laravel\\DataGridServiceProvider' --tag='assets'"
+            "php artisan vendor:publish --provider='Cartalyst\\DataGrid\\Laravel\\DataGridServiceProvider' --tag='assets' --force"
         ],
         "_post-update-cmd": [
             "php artisan optimize --force",
             "php artisan config:cache",
             "php artisan route:cache",
-            "php artisan vendor:publish --provider='Cartalyst\\DataGrid\\Laravel\\DataGridServiceProvider' --tag='assets'"
+            "php artisan vendor:publish --provider='Cartalyst\\DataGrid\\Laravel\\DataGridServiceProvider' --tag='assets' --force"
         ],
         "post-create-project-cmd": [
             "php -r \"copy('.env.example', '.env');\"",
