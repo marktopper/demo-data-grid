@@ -16,7 +16,9 @@ group
 $(function() {
 
 	// Setup DataGrid
-	var grid = $.datagrid('group', {
+	var dg = $.dg();
+
+    var grid = dg.add('group', {
         source: '{{ URL::to('source') }}',
         pagination: {
             method: 'group',

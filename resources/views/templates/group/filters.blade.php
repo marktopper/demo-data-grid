@@ -26,13 +26,13 @@
 
                 <% } else { %>
 
-                    <% if (f.query.column === 'all') { %>
+                    <% if (f.query[0].column === 'all') { %>
 
-                        <%- f.query.value %>
+                        <%- f.query[0].value %>
 
                     <% } else { %>
 
-                        <%- f.query.value %> in <em><%- f.query.column %></em>
+                        <%- f.query[0].value %> in <em><%- f.query[0].column %></em>
 
                     <% } %>
 

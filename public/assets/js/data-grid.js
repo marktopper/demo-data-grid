@@ -26,9 +26,219 @@
      * @var array
      */
     var defaults = {
+
+        url: {
+            hash: true,
+            semantic: false,
+            base: ''
+        },
+
+    };
+
+    function DataGridManager(options) {
+        this.grids = [];
+
+        // Options
+        this.opt = _.extend({}, defaults);
+
+        _.each(_.keys(options), $.proxy(function(key) {
+            this.opt[key] = (key !== 'layouts') ? _.defaults(options[key], defaults[key]) : options[key];
+        }, this));
+
+        // Check our dependencies
+        this._checkDependencies();
+
+        this.backbone = Backbone.noConflict();
+
+        _.defer($.proxy(this.init, this));
+    };
+
+    DataGridManager.prototype = {
+        init: function() {
+            _.defer($.proxy(this.initRouter, this));
+
+            _.defer($.proxy(this.initGrids, this));
+        },
+
+        initRouter: function() {
+            var routerOptions = {};
+
+            if (this.opt.url.semantic) {
+                routerOptions = {
+                    root: this.opt.url.base,
+                    pushState: true
+                };
+            }
+
+            var router = this.backbone.Router.extend({
+                routes: {
+                    '*path': 'defaultRoute'
+                },
+
+                defaultRoute: $.proxy(this._updateGrids, this)
+            });
+
+            $(this).on('dg:hashchange', $.proxy(this.pushHash, this));
+
+            this.router = new router();
+
+            this.backbone.history.start(routerOptions);
+        },
+
+        _updateGrids: function() {
+            var hash           = this._getFragment();
+            var routes_array   = _.compact(hash.split('grid/'));
+            var separateRoutes = [];
+
+            _.each(routes_array, function(route) {
+                separateRoutes.push(_.compact(route.split('/')));
+            });
+
+            _.each(this.grids, function(grid) {
+                if (_.isEmpty(separateRoutes)) {
+                    grid.refresh();
+                } else {
+                    _.each(separateRoutes, function(r) {
+                        if (r[0] === grid.key) {
+                            // Only update grids with a changed hash
+                            if ('grid/' + r.join('/') !== grid.currentHash) {
+                                grid.reset();
+                                grid.applyFromRoute(r);
+                                grid.refresh();
+                            }
+                        }
+                    });
+                }
+            });
+        },
+
+        _getFragment: function() {
+            return this.backbone.history.getFragment();
+        },
+
+        initGrids: function() {
+            var self = this;
+
+            _.each(this.grids, function(grid) {
+                grid.on('dg:hashchange', function() {
+                    self.updateHash();
+                });
+            });
+
+            // this.updateHash();
+        },
+
+        updateHash: function() {
+            if (! this.opt.url.hash) {
+                return;
+            }
+
+            var hashParts = [];
+
+            _.each(this.grids, function(grid) {
+
+                var hash = grid.buildHash();
+
+                hashParts.push(hash);
+
+            });
+
+            var final_hash = hashParts.join('/');
+
+            this.backbone.history.navigate(final_hash, {trigger: false});
+        },
+
+        /**
+         * jQuery.on wrapper for dg:event callbacks
+         *
+         * @param  event
+         * @param  callback
+         * @return DataGrid
+         */
+        on: function(event, callback) {
+            if (_.isObject(event)) {
+                this.callbackListeners(event);
+            } else {
+                this.bindCallback(event, callback);
+            }
+
+            return this;
+        },
+
+        /**
+         * Binds single callback.
+         *
+         * @param  event
+         * @param  callback
+         */
+        bindCallback: function(event, callback) {
+            $(this).on(event, $.proxy(function() {
+                callback.apply(this, _.rest(arguments));
+            }, this));
+        },
+
+        /**
+         * Checks the Data Grid dependencies.
+         *
+         * @return void
+         */
+        _checkDependencies: function () {
+            if (typeof window._ === 'undefined') {
+                throw new Error('Underscore is not defined. DataGrid Requires UnderscoreJS v1.6.0 or later to run!');
+            }
+
+            if (typeof Backbone === 'undefined') {
+                throw new Error('DataGrid Requires Backbone.js v1.0.0 or later to run!');
+            }
+        },
+
+        /**
+         * Registers a new data grid.
+         *
+         * @param  grid
+         * @param  options
+         */
+        add: function(grid, options) {
+            var newGrid = $.datagrid(grid, options);
+
+            this.grids.push(newGrid);
+
+            return newGrid;
+        }
+    };
+
+    /**
+     * Data grid manager init.
+     *
+     * @param  options  object
+     * @return DataGridManager
+     */
+    $.dg = function(options) {
+        return new DataGridManager(options);
+    };
+
+    /**
+     * Data grid manager prototype
+     *
+     * @type object
+     */
+    $.dg.prototype = DataGridManager.prototype;
+
+})(jQuery, window, document);
+
+
+;(function ($, window, document, undefined)
+{
+    'use strict';
+
+    /**
+     * Default settings
+     *
+     * @var array
+     */
+    var defaults = {
         source: null,
 
-        multiple: false,
         prefetched: false,
 
         pagination: {
@@ -82,12 +292,6 @@
             timeout: 600
         },
 
-        url: {
-            hash: true,
-            semantic: false,
-            base: ''
-        },
-
         loader: {
             selector: undefined,
             show_effect: 'fadeIn',
@@ -97,7 +301,8 @@
 
         formats: {
             timestamp: 'YYYY-MM-DD HH:mm:ss',
-            date: 'YYYY-MM-DD'
+            server_date: 'YYYY-MM-DD',
+            client_date: 'MMM DD, YYYY'
         },
 
         callback: undefined
@@ -127,6 +332,8 @@
 
         this.is_search_active = false;
 
+        this.currentHash = null;
+
         this.search_timeout = null;
 
         this.pagination = {
@@ -136,13 +343,6 @@
             filtered: null,
             base_throttle: this.opt.pagination.throttle
         };
-
-        this.initial = true;
-
-        // Check our dependencies
-        this._checkDependencies();
-
-        this.backbone = Backbone.noConflict();
 
         // Initialize Data Grid
         // _.defer is needed to catch chained listeners before the first events are triggered
@@ -161,8 +361,6 @@
             this.initLayouts();
 
             this.listeners();
-
-            this.initRouter();
         },
 
         /**
@@ -237,48 +435,6 @@
             return this;
         },
 
-        initRouter: function() {
-            var routerOptions = {};
-
-            var router = this.backbone.Router.extend({
-                routes: {
-                    '*path': 'defaultRoute'
-                },
-
-                defaultRoute: $.proxy(this.onRouteDispatch, this)
-            });
-
-            if (this.opt.url.semantic) {
-                routerOptions = {
-                    root: this.opt.url.base,
-                    pushState: true
-                };
-            }
-
-            if (this.opt.url.hash) {
-                $(this).on('dg:hashchange', $.proxy(this.pushHash, this));
-            }
-
-            this.router = new router();
-
-            this.backbone.history.start(routerOptions);
-        },
-
-        /**
-         * Checks the Data Grid dependencies.
-         *
-         * @return void
-         */
-        _checkDependencies: function () {
-            if (typeof window._ === 'undefined') {
-                throw new Error('Underscore is not defined. DataGrid Requires UnderscoreJS v1.6.0 or later to run!');
-            }
-
-            if (typeof Backbone === 'undefined') {
-                throw new Error('DataGrid Requires Backbone.js v1.0.0 or later to run!');
-            }
-        },
-
         /**
          * jQuery.on wrapper for dg:event callbacks
          *
@@ -294,6 +450,58 @@
             }
 
             return this;
+        },
+
+        applyFromRoute: function(route) {
+            var parsed_route = route.splice(1);
+
+            // Build Array For Sorts
+            var last_item = parsed_route[(parsed_route.length - 1)];
+
+            if (/^threshold/g.test(last_item)) {
+                this.extractThresholdFromRoute(last_item);
+
+                parsed_route = parsed_route.splice(0, (parsed_route.length - 1));
+
+                last_item = parsed_route[(parsed_route.length - 1)];
+            }
+
+            if (/^throttle/g.test(last_item)) {
+                this.extractThrottleFromRoute(last_item);
+
+                parsed_route = parsed_route.splice(0, (parsed_route.length - 1));
+
+                last_item = parsed_route[(parsed_route.length - 1)];
+            }
+
+            // Use test to return true/false
+            if (/^page/g.test(last_item)) {
+                // Remove Page From parsed_route
+                this.extractPageFromRoute(last_item);
+
+                parsed_route = parsed_route.splice(0, (parsed_route.length - 1));
+
+                last_item = parsed_route[(parsed_route.length - 1)];
+            } else {
+                this.pagination.page_index = 1;
+            }
+
+            // Parse sorts
+            if ((/desc$/g.test(last_item)) || (/asc$/g.test(last_item))) {
+                this.extractSortsFromRoute(last_item);
+
+                // Remove Sort From parsed_route
+                parsed_route = parsed_route.splice(0, (parsed_route.length - 1));
+
+                last_item = parsed_route[(parsed_route.length - 1)];
+            } else if (this.opt.sorting.column && this.opt.sorting.direction) {
+                // Convert sort to string
+                var str = [this.opt.sorting.column, this.opt.delimiter.expression, this.opt.sorting.direction].join('');
+
+                this.extractSortsFromRoute(str);
+            }
+
+            this.extractFiltersFromRoute(parsed_route);
         },
 
         /**
@@ -323,8 +531,7 @@
 
                     this.$body.on('click', term_selector, $.proxy(this.filter_types.term._onFilter, this));
 
-                    // TODO Fix term select event handler
-                    this.$body.find('select[data-grid-group]' + this.grid + ',' + this.grid + ' select[data-grid-group]').on('change', $.proxy(this._onSelectFilter, this));
+                    this.$body.on('change', 'select[data-grid-group]' + this.grid + ',' + this.grid + ' select[data-grid-group]', $.proxy(this.filter_types.term._onSelectFilter, this));
                 },
 
                 /**
@@ -333,6 +540,11 @@
                 extract: function(fragment) {
 
                     var $filter = $('[data-grid-filter="' + fragment + '"]' + this.grid + ',' + this.grid + ' [data-grid-filter="' + fragment + '"]');
+
+                    // Set the matching option if we're dealing with a select
+                    if ($filter[0] !== undefined && $filter[0].nodeName === 'OPTION') {
+                        $filter.parent().val($filter.val());
+                    }
 
                     // TODO Find out what to do in case we have filter preset, but no filter element
                     if (!_.has(this.opt.filters, fragment) && !$filter.length) {
@@ -425,6 +637,8 @@
                         this.removeFilter($filter.data('grid-filter'));
                         this.resetBeforeApply($filter);
                         this.filter_types.term._apply.call(this, $filter);
+                    } else if (! _.isUndefined($filter.data('grid-reset-group'))) {
+                        this.resetBeforeApply($filter);
                     }
 
                     if (refresh) {
@@ -510,6 +724,20 @@
                         var $from = this.$body.find('[data-grid-filter="' + name + '"][data-grid-range="start"]' + this.grid + ',' + this.grid + ' [data-grid-filter="' + name + '"][data-grid-range="start"]');
 
                         var $to = this.$body.find('[data-grid-filter="' + name + '"][data-grid-range="end"]' + this.grid + ',' + this.grid + ' [data-grid-filter="' + name + '"][data-grid-range="end"]');
+
+                        var isDate = _.isUndefined($filter.data('grid-date')) ? null : true;
+
+                        var server_date_format = _.isNull($filter.data('grid-server-date-format')) ?
+                            null : ($filter.data('grid-server-date-format') || this.opt.formats.server_date);
+
+                        var client_date_format = _.isNull($filter.data('grid-client-date-format')) ?
+                            null : ($filter.data('grid-client-date-format') || this.opt.formats.client_date);
+
+                        if (server_date_format && window.moment && isDate) {
+                            from = moment(from, server_date_format).format(client_date_format);
+
+                            to = moment(to, server_date_format).format(client_date_format);
+                        }
 
                         if ($from.is(':input')) {
                             $from.val(from);
@@ -617,13 +845,18 @@
                         this.setSort(this._parseSort($filter.data('grid-sort')));
                     }
 
-                    var date_format = _.isUndefined($filter.data('grid-date-format')) ?
-                        null : ($filter.data('grid-date-format') || this.opt.formats.date);
+                    var isDate = _.isUndefined($filter.data('grid-date')) ? null : true;
 
-                    if (date_format && window.moment) {
-                        from = moment(from).format(date_format);
+                    var server_date_format = _.isNull($filter.data('grid-server-date-format')) ?
+                        null : ($filter.data('grid-server-date-format') || this.opt.formats.server_date);
 
-                        to = moment(to).format(date_format);
+                    var client_date_format = _.isNull($filter.data('grid-client-date-format')) ?
+                        null : ($filter.data('grid-client-date-format') || this.opt.formats.client_date);
+
+                    if (server_date_format && window.moment && isDate) {
+                        from = moment(from, client_date_format).format(server_date_format);
+
+                        to = moment(to, client_date_format).format(server_date_format);
                     }
 
                     var filter = {
@@ -926,32 +1159,6 @@
             }
         },
 
-        onRouteDispatch: function(path) {
-            var route_array = path ? path.split('/') : [];
-
-            if (this.initial) {
-                this.applyDefaults();
-
-                this.initial = false;
-
-                if (this.opt.prefetched) {
-                    this.opt.prefetched = false;
-
-                    return;
-                }
-
-                if (_.isEmpty(route_array)) {
-                    this.refresh();
-                } else {
-                    this.updateOnHash(route_array);
-                }
-            } else {
-                this.reset();
-
-                this.updateOnHash(route_array);
-            }
-        },
-
         /**
          * Handle reset click
          *
@@ -1050,10 +1257,6 @@
             document.location = this.opt.source + '?' + this.buildAjaxURI(type);
         },
 
-        _getFragment: function() {
-            return this.backbone.history.getFragment();
-        },
-
         /**
          * Update on hash change.
          *
@@ -1062,15 +1265,15 @@
          */
         updateOnHash: function(routes) {
             var options        = this.opt,
-                current_route  = '/' + routes.join('/'),
+                current_route  = routes.join('/'),
                 current_hash   = this._getFragment(),
                 last_item;
 
-            if (this.opt.multiple) {
-                routes = _.compact(current_route.split('/grid/'));
-            } else {
-                routes = [current_route];
+            if (_.isEmpty(this.grids)) {
+                this.initHash();
             }
+
+            routes = this.grids[this.key];
 
             _.each(routes, $.proxy(function(route) {
                 var parsed_route = _.compact(route.split('/'));
@@ -1141,7 +1344,7 @@
             if (this.opt.multiple && current_hash.indexOf(this.key) === -1) {
                 if (options.sorting.column && options.sorting.direction) {
                     var str = [options.sorting.column, options.delimiter.expression, options.sorting.direction].join('');
-                    this.extractSortsFromRoute(str);
+                    // this.extractSortsFromRoute(str);
                 }
             }
 
@@ -1175,11 +1378,11 @@
             }
 
             if (path !== '') {
-                if (current_hash !== path) {
-                    this.backbone.history.navigate(path, {trigger: false});
-                }
+                // if (current_hash !== path) {
+                    // this.backbone.history.navigate(path, {trigger: false});
+                // }
             } else if (current_hash !== '') {
-                this.backbone.history.navigate('', {trigger: false});
+                // this.backbone.history.navigate('', {trigger: false});
             }
         },
 
@@ -1212,6 +1415,10 @@
                     appended = true;
                 }
 
+                if (routes_array[i].substr(routes_array[i].length - 1, routes_array[i].length - 1) === '/') {
+                    routes_array[i] = routes_array[i].substr(0, routes_array[i].length - 1);
+                }
+
                 final_path += 'grid/' + routes_array[i];
             }
 
@@ -1219,7 +1426,7 @@
 
             path = _.isEmpty(routes_array) ? base : final_path;
 
-            if (path.length > 1 && path.substr(0, 4) !== 'grid') {
+            if (path.length > 1 && path.substr(0, 5) !== '/grid') {
                 path = 'grid/' + path;
             }
 
@@ -1255,10 +1462,6 @@
          * @return void
          */
         applyDefaults: function() {
-            if (this._getFragment() !== '') {
-                return;
-            }
-
             // Init default filters
             _.each($('[data-grid-filter-default]' + this.grid + ', ' + this.grid + ' [data-grid-filter-default]'),
                 $.proxy(function(filter) {
@@ -1709,11 +1912,11 @@
          */
         render: function(response) {
             if (!this.opt.pagination.throttle) {
-                defaults.pagination.throttle = response.throttle;
+                this.opt.pagination.throttle = response.throttle;
             }
 
             if (!this.opt.pagination.threshold) {
-                defaults.pagination.threshold = response.threshold;
+                this.opt.pagination.threshold = response.threshold;
             }
 
             if (this.pagination.page_index > response.pages) {
@@ -1766,6 +1969,21 @@
             console.error('fetchResults ' + jqXHR.status, errorThrown);
 
             this.is_search_active = false;
+        },
+
+        buildHash: function() {
+            // filters/sorts/page/throttle/threshold
+            var filters   = this.buildFilterFragment(),
+                sort      = this.buildSortFragment(),
+                page      = this.buildPageFragment(),
+                throttle  = this.buildThrottleFragment(),
+                threshold = this.buildThresholdFragment(),
+                base      = _.compact(_.flatten([filters, sort, page, throttle, threshold])).join('/')
+            ;
+
+            var hash = 'grid/' + this.key + '/' + base;
+
+            return this.currentHash = hash;
         },
 
         /**

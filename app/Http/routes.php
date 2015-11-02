@@ -38,6 +38,10 @@ Route::get('group', function () {
     return view('group');
 });
 
+Route::get('multiple', function () {
+    return view('multiple');
+});
+
 Route::get('songs', function () {
     $columns = [
         'track_id',
@@ -45,18 +49,38 @@ Route::get('songs', function () {
         'duration',
     ];
 
+    $faker = Faker::create();
+
+    if ( ! $array = Cache::get('songs')) {
+
+        $array = [];
+
+        foreach (range(1, 3000) as $index)
+        {
+            $int = rand(strtotime("- 1 year"), time());
+            $array[] = [
+                'track_id' => $index,
+                'title'    => $faker->sentence,
+                'duration' => $faker->time,
+            ];
+        }
+
+        Cache::forever('songs', $array);
+    }
+
     $settings = [
         'columns' => $columns,
         'sort' => [
             'column'    => 'track_id',
             'direction' => 'asc',
         ],
-        'max_results' => 100,
     ];
 
-    $handler = new DatabaseHandler(new Songs, $settings);
+    $handler = new \Cartalyst\DataGrid\DataHandlers\CollectionHandler($array, $settings);
 
-    return DataGrid::make($handler);
+    $requestProvider = new ExportProvider(app('request'));
+
+    return DataGrid::make($handler, $requestProvider);
 });
 
 
@@ -73,8 +97,83 @@ Route::get('source', function () {
     $settings = [
         'columns' => $columns,
         'sort' => [
-            'column'    => 'country',
-            'direction' => 'asc',
+            [
+                'column'    => 'country',
+                'direction' => 'asc',
+            ],
+            [
+                'column'    => 'subdivision',
+                'direction' => 'desc',
+            ],
+        ],
+        'max_results' => 20,
+    ];
+
+    /**
+     * Collection Handler
+     */
+
+    // $array = [];
+
+    // $faker = Faker::create();
+
+    // foreach (range(1, 300) as $index)
+    // {
+    //     $int = rand(strtotime("- 1 year"), time());
+    //     $array[] = [
+    //         'country'                  => $faker->country,
+    //         'subdivision'              => $faker->state,
+    //         'city'                     => $faker->city,
+    //         'population'               => $faker->randomNumber(5),
+    //         'country_code'             => $faker->countryCode,
+    //         'country_subdivision_code' => $faker->stateAbbr,
+    //         'created_at'               => date("Y-m-d H:i:s", $int),
+    //         'updated_at'               => date("Y-m-d H:i:s", $int),
+    //     ];
+    // }
+
+    // $handler = new \Cartalyst\DataGrid\DataHandlers\CollectionHandler($array, $settings);
+
+    /**
+     * Database Handler
+     */
+
+    // Database query
+    // $handler = new DatabaseHandler(DB::table('cities'), $settings);
+
+    // Eloquent model query
+    // $handler = new DatabaseHandler(with(new City)->newQuery(), $settings);
+
+    // Eloquent model
+    $handler = new DatabaseHandler(new City, $settings);
+
+    $requestProvider = new ExportProvider(app('request'));
+
+    return DataGrid::make($handler, $requestProvider);
+});
+
+
+Route::get('source1', function () {
+    $columns = [
+        'id',
+        'country',
+        'subdivision',
+        'city',
+        'population',
+        'created_at',
+    ];
+
+    $settings = [
+        'columns' => $columns,
+        'sort' => [
+            [
+                'column'    => 'country',
+                'direction' => 'asc',
+            ],
+            [
+                'column'    => 'subdivision',
+                'direction' => 'desc',
+            ],
         ],
         'max_results' => 20,
     ];

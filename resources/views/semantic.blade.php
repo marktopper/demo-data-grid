@@ -20,14 +20,17 @@
 $(function() {
 
 	// Setup DataGrid
-    var grid = $.datagrid('standard', {
-        source: '{{ URL::to('source') }}',
-        pagination: {
-            throttle: 20
-        },
+    var dg = $.dg({
         url: {
             semantic: true,
             base: '/semantic'
+        }
+    });
+
+    var grid = dg.add('standard', {
+        source: '{{ URL::to('source') }}',
+        pagination: {
+            throttle: 20
         },
         loader: {
             selector: '.loader'
@@ -120,15 +123,19 @@ $(function() {
 
 		<div class="form-group">
 
-			<div class="input-group datePicker" data-grid="standard"
+			<div class="input-group datePicker"
+                 data-grid="standard"
                  data-grid-filter="created"
                  data-grid-type="range"
-                 data-grid-query="created"
+                 data-grid-query="created_at"
                  data-grid-range="start"
+                 data-grid-date
+                 data-grid-client-date-format="MMM DD, YYYY"
+                 data-grid-server-date-format
                  data-grid-label="Created At"
-                 data-grid-date-format>
+            >
 
-                <input type="text" data-format="DD MMM, YYYY" disabled class="form-control" placeholder="Start Date">
+                <input type="text" data-format="MMM DD, YYYY" disabled class="form-control" placeholder="Start Date">
 
 				<span class="input-group-addon" style="cursor: pointer;"><i class="fa fa-calendar"></i></span>
 
@@ -146,12 +153,15 @@ $(function() {
 			<div class="input-group datePicker" data-grid="standard"
                  data-grid-filter="created"
                  data-grid-type="range"
-                 data-grid-query="created:2015-06-12"
+                 data-grid-query="created_at"
                  data-grid-range="end"
+                 data-grid-date
+                 data-grid-client-date-format="MMM DD, YYYY"
+                 data-grid-server-date-format
                  data-grid-label="Created At"
-                 data-grid-date-format="YYYY-MM-DD">
+            >
 
-                <input type="text" data-format="DD MMM, YYYY" disabled
+                <input type="text" data-format="MMM DD, YYYY" disabled
                        class="form-control" placeholder="End Date">
 
 				<span class="input-group-addon" style="cursor: pointer;"><i class="fa fa-calendar"></i></span>

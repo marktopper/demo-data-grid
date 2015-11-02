@@ -1,14 +1,13 @@
-<script type="text/template" data-grid="standard" data-grid-template="filters">
+<script type="text/template" data-grid="multi1" data-grid-template="filters">
 
     <% var filters = _.reject(grid.applied_filters, function(f) {return f.type === 'live';}); %>
 
     <% if (_.isEmpty(filters)) { %>
-
         <i>There are no filters applied.</i>
-
     <% } else { %>
 
         <% _.each(filters, function(f) { %>
+
             <button class="btn btn-default" data-grid-reset-filter="<%= f.name %>">
 
                 <% if (f.query.from !== undefined && f.query.to !== undefined) { %>
@@ -35,7 +34,7 @@
 
                     <% } else { %>
 
-                        <%- f.query[0].value %> in <em><%- f.query[0].column %></em>
+                        <%- f.query.value %> in <em><%- f.query.column %></em>
 
                     <% } %>
 

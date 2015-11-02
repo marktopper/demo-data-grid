@@ -48,6 +48,7 @@
 						<li {{ Request::is('semantic') ? 'class="active"' : null }}><a href="{{ URL::to('semantic') }}">Semantic URLs</a></li>
 						<li {{ Request::is('infinite') ? 'class="active"' : null }}><a href="{{ URL::to('infinite') }}">Infinite</a></li>
 						<li {{ Request::is('group') ? 'class="active"' : null }}><a href="{{ URL::to('group') }}">Grouped</a></li>
+						<li {{ Request::is('multiple') ? 'class="active"' : null }}><a href="{{ URL::to('multiple') }}">Multiple</a></li>
 					</ul>
 
 					<ul class="nav navbar-nav navbar-right">

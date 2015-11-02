@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "63730709f31f78336d88d18299aaae70",
-    "content-hash": "86d34cb86141cc2ce80675ff050bc972",
+    "hash": "b7ee9e06ff502da1e9ce5ec9614dd35a",
+    "content-hash": "007c15a463d72ee0c1a699b484b933b2",
     "packages": [
         {
             "name": "cartalyst/collections",
@@ -79,12 +79,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:cartalyst/data-grid.git",
-                "reference": "a8046e6161d6fa02a839800ed6d0e082e4848e5b"
+                "reference": "90e363225ed2de011bc24d0ea7e9bb48f2b58da5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cartalyst/data-grid/zipball/a8046e6161d6fa02a839800ed6d0e082e4848e5b",
-                "reference": "a8046e6161d6fa02a839800ed6d0e082e4848e5b",
+                "url": "https://api.github.com/repos/cartalyst/data-grid/zipball/90e363225ed2de011bc24d0ea7e9bb48f2b58da5",
+                "reference": "90e363225ed2de011bc24d0ea7e9bb48f2b58da5",
                 "shasum": ""
             },
             "require": {
@@ -136,7 +136,7 @@
                 "source": "https://github.com/cartalyst/data-grid/tree/feature/4.0",
                 "issues": "https://github.com/cartalyst/data-grid/issues"
             },
-            "time": "2015-10-26 21:19:14"
+            "time": "2015-10-27 01:16:19"
         },
         {
             "name": "cartalyst/data-grid-export",
@@ -208,12 +208,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:cartalyst/data-grid-laravel.git",
-                "reference": "5b9c0b3ef94666d706a733a580af93c4b53b929a"
+                "reference": "cd0c505dfa06bb3d606e0084bc536313ffdb1954"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cartalyst/data-grid-laravel/zipball/5b9c0b3ef94666d706a733a580af93c4b53b929a",
-                "reference": "5b9c0b3ef94666d706a733a580af93c4b53b929a",
+                "url": "https://api.github.com/repos/cartalyst/data-grid-laravel/zipball/cd0c505dfa06bb3d606e0084bc536313ffdb1954",
+                "reference": "cd0c505dfa06bb3d606e0084bc536313ffdb1954",
                 "shasum": ""
             },
             "require": {
@@ -269,7 +269,7 @@
                 "source": "https://github.com/cartalyst/data-grid-laravel/tree/master",
                 "issues": "https://github.com/cartalyst/data-grid-laravel/issues"
             },
-            "time": "2015-10-26 21:48:25"
+            "time": "2015-10-26 21:52:19"
         },
         {
             "name": "classpreloader/classpreloader",
@@ -483,16 +483,16 @@
         },
         {
             "name": "dompdf/dompdf",
-            "version": "dev-master",
+            "version": "v0.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dompdf/dompdf.git",
-                "reference": "4c7dca690edc85168cff0abe9d1d9aaf4ebb72ce"
+                "reference": "cf7d8a0a27270418850cc7d7ea532159e5eeb3eb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dompdf/dompdf/zipball/4c7dca690edc85168cff0abe9d1d9aaf4ebb72ce",
-                "reference": "4c7dca690edc85168cff0abe9d1d9aaf4ebb72ce",
+                "url": "https://api.github.com/repos/dompdf/dompdf/zipball/cf7d8a0a27270418850cc7d7ea532159e5eeb3eb",
+                "reference": "cf7d8a0a27270418850cc7d7ea532159e5eeb3eb",
                 "shasum": ""
             },
             "require": {
@@ -520,7 +520,7 @@
             ],
             "description": "DOMPDF is a CSS 2.1 compliant HTML to PDF converter",
             "homepage": "https://github.com/dompdf/dompdf",
-            "time": "2015-09-18 13:28:06"
+            "time": "2014-03-11 01:59:52"
         },
         {
             "name": "fzaninotto/faker",
@@ -2021,12 +2021,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/var-dumper.git",
-                "reference": "31a698cfe5c65b47ea16c4dcc3e0cda62ef6074a"
+                "reference": "eb033050050916b6bfa51be71009ef67b16046c9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/var-dumper/zipball/31a698cfe5c65b47ea16c4dcc3e0cda62ef6074a",
-                "reference": "31a698cfe5c65b47ea16c4dcc3e0cda62ef6074a",
+                "url": "https://api.github.com/repos/symfony/var-dumper/zipball/eb033050050916b6bfa51be71009ef67b16046c9",
+                "reference": "eb033050050916b6bfa51be71009ef67b16046c9",
                 "shasum": ""
             },
             "require": {
@@ -2069,7 +2069,7 @@
                 "debug",
                 "dump"
             ],
-            "time": "2015-10-19 18:09:55"
+            "time": "2015-10-25 17:17:38"
         },
         {
             "name": "vlucas/phpdotenv",

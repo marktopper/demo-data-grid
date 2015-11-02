@@ -1,4 +1,4 @@
-<script type="text/template" data-grid="standard" data-grid-template="results">
+<script type="text/template" data-grid="multi1" data-grid-template="results">
 
     <% var results = response.results; %>
 
@@ -24,7 +24,7 @@
 </script>
 
 
-<script type="text/template" data-grid="standard" data-grid-template="results_alt">
+<script type="text/template" data-grid="multi1" data-grid-template="results_alt">
 
     <% var results = response.results; %>
 

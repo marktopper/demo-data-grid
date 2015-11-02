@@ -21,21 +21,40 @@
 <script>
 $(function() {
 
+    var dg = $.dg();
+
     // Setup DataGrid
-    var grid = $.datagrid('standard', {
+    var grid = dg.add('standard', {
         source: '{{ URL::to('source') }}',
         pagination: {
-            throttle: 20
+            throttle: 2,
+            threshold: 100
         },
-        multiple: true,
         loader: {
             selector: '.loader'
         },
+        // layouts: {
+        //     results: {
+        //         template: '[data-grid-template="results"]',
+        //         layout: '[data-grid-layout="results"]'
+        //     },
+        //     filters: {
+        //         template: '[data-grid-template="filters"]',
+        //         layout: '[data-grid-layout="filters"]'
+        //     },
+        //     pagination: {
+        //         template: '[data-grid-template="pagination"]',
+        //         layout: '[data-grid-layout="pagination"]'
+        //     },
+        //     // results_ul: {
+        //     //     template: '[data-grid-template="results_alt"]',
+        //     //     layout: '[data-grid-layout="results_alt"]'
+        //     // }
+        // },
         filters: {
             'mexico:large': {
                 type: 'term',
                 label: 'Large Mexico cities',
-                default: true,
                 query: [
                     {
                         column: 'country',
@@ -60,19 +79,12 @@ $(function() {
                     },
                     {
                         column: 'population',
-                        value: '10000',
-                        operator: '<'
+                        value: '5000',
+                        operator: '<='
                     }
                 ]
             }
         }
-    }).on('dg:applying', function(filter) {
-
-        if (filter.name === 'population') {
-            $('.populationSlider').val([filter.query.from, filter.query.to]);
-        }
-
-        console.log(this, filter);
     });
 
     // Date Picker
@@ -99,17 +111,22 @@ $(function() {
         }
     }).on('change', function() {
         var range = $(this).val();
-        console.log('change', range);
+        // console.log('change', range);
         $(this).data('grid-query', ['population', ':', range[0], ':', range[1]].join(''));
     });
 
     /**
 	 * DEMO ONLY EVENTS
 	 */
-	$('[data-per-page]').on('change', function() {
-		grid.setThrottle($(this).val());
-		grid.refresh();
-	});
+    $('[data-per-page][data-grid="standard"]').on('change', function() {
+        grid.setThrottle($(this).val());
+        grid.refresh();
+    });
+
+    $('[data-per-page][data-grid="standard1"]').on('change', function() {
+        grid1.setThrottle($(this).val());
+        grid1.refresh();
+    });
 });
 </script>
 @stop
@@ -119,9 +136,17 @@ $(function() {
 
 <div class="loader" data-grid="standard">
 
-	<div>
-		<span></span>
-	</div>
+    <div>
+        <span></span>
+    </div>
+
+</div>
+
+<div class="loader" data-grid="standard1">
+
+    <div>
+        <span></span>
+    </div>
 
 </div>
 
@@ -144,8 +169,20 @@ $(function() {
 				Filters <span class="caret"></span>
 			</button>
 
+            <select data-grid="standard" data-grid-group="selectel" class="form-control" data-grid-reset-group>
+                <option data-grid-reset-group class="disabled">Select</option>
+                <option data-grid-filter="country_us" data-grid-query="country:us" data-grid-label="United States">USA</option>
+                <option data-grid-filter="country_ca" data-grid-query="country:ca" data-grid-label="Canada">CA</option>
+            </select>
+
+            <select data-grid="standard" data-grid-group="selectel1" class="form-control" data-grid-reset-group>
+                <option data-grid-reset-group>Select</option>
+                <option data-grid-filter="country_me" data-grid-query="country:mexico" data-grid-label="Mexico">Mexico</option>
+                <option data-grid-filter="country_eg" data-grid-query="country:egypt" data-grid-label="Egypt">Egypt</option>
+            </select>
+
 			<ul class="dropdown-menu" role="menu" data-grid="standard" data-grid-group="mainfilters">
-				<li><a href="#" data-grid-filter="country:us" data-grid-query="country:United States" data-grid-sort="subdivision:asc;population:asc" data-grid-label="United States">United States</a></li>
+				<li><a href="#" data-grid-filter="country:us" data-grid-query="country:United States" data-grid-sort="subdivision:asc;population:desc" data-grid-label="United States">United States</a></li>
 				<li><a href="#" data-grid-filter="country:canada" data-grid-query="country:Canada" data-grid-label="Canada">Canada</a></li>
 				<li><a href="#" data-grid-filter="population_over_10000" data-grid-query="population:>:10000" data-grid-label="population:Population >:10000">Populations > 10000</a></li>
                 <li><a href="#" data-grid-filter="mexico:large">Large Mexico cities</a></li>
@@ -192,7 +229,7 @@ $(function() {
 
 		<div class="form-group">
 
-			<select data-per-page class="form-control">
+			<select data-per-page data-grid="standard" class="form-control">
 				<option>Per Page</option>
 				<option value="10">10</option>
 				<option value="20">20</option>
@@ -246,12 +283,15 @@ $(function() {
                  data-grid="standard"
                  data-grid-filter="created"
                  data-grid-type="range"
-                 data-grid-query="created"
+                 data-grid-query="created_at"
                  data-grid-range="start"
-                 data-grid-date-format
-                 data-grid-label="Created At">
+                 data-grid-date
+                 data-grid-client-date-format="MMM DD, YYYY"
+                 data-grid-server-date-format
+                 data-grid-label="Created At"
+            >
 
-                <input type="text" data-format="DD MMM, YYYY" disabled class="form-control" placeholder="Start Date">
+                <input type="text" data-format="MMM DD, YYYY" disabled class="form-control" placeholder="Start Date">
 
                 <span class="input-group-addon" style="cursor: pointer;"><i class="fa fa-calendar"></i></span>
 
@@ -270,12 +310,15 @@ $(function() {
                  data-grid="standard"
                  data-grid-filter="created"
                  data-grid-type="range"
-                 data-grid-query="created"
+                 data-grid-query="created_at"
                  data-grid-range="end"
-                 data-grid-date-format
-                 data-grid-label="Created At">
+                 data-grid-date
+                 data-grid-client-date-format="MMM DD, YYYY"
+                 data-grid-server-date-format
+                 data-grid-label="Created At"
+            >
 
-                <input type="text" data-format="DD MMM, YYYY" disabled class="form-control" placeholder="End Date">
+                <input type="text" data-format="MMM DD, YYYY" disabled class="form-control" placeholder="End Date">
 
                 <span class="input-group-addon" style="cursor: pointer;"><i class="fa fa-calendar"></i></span>
 
@@ -311,6 +354,8 @@ $(function() {
 	<div class="col-lg-12">
 
 		<div class="table-responsive">
+
+            <ul data-grid-layout="results_alt" data-grid="standard"></ul>
 
 			<table class="table table-striped table-bordered table-hover" data-grid-layout="results" data-grid="standard">
 

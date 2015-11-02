@@ -16,7 +16,9 @@ Infinite
 $(function() {
 
 	// Setup DataGrid
-	var grid = $.datagrid('infinite', {
+    var dg = $.dg();
+
+	var grid = dg.add('infinite', {
         source: '{{ URL::to('source') }}',
         pagination: {
             throttle: 21,
