@@ -27,7 +27,7 @@ $(function() {
     var grid = dg.add('standard', {
         source: '{{ URL::to('source') }}',
         pagination: {
-            throttle: 2,
+            throttle: 20,
             threshold: 100
         },
         loader: {
@@ -85,6 +85,8 @@ $(function() {
                 ]
             }
         }
+    }).on('dg:update', function() {
+        $('[data-per-page][data-grid="standard"]').val(this.getThrottle());
     });
 
     // Date Picker

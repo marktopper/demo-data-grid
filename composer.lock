@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f04a6124baebe65958d87c4a53ab11fd",
+    "hash": "3a56e014cb945adf948e9590f7938260",
     "content-hash": "86d34cb86141cc2ce80675ff050bc972",
     "packages": [
         {
@@ -79,12 +79,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:cartalyst/data-grid.git",
-                "reference": "dc57a15e4e155310bfe528c80e0cba5e4e8327c9"
+                "reference": "798a0a7945f249c4f8717029520932246c6d73c6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cartalyst/data-grid/zipball/dc57a15e4e155310bfe528c80e0cba5e4e8327c9",
-                "reference": "dc57a15e4e155310bfe528c80e0cba5e4e8327c9",
+                "url": "https://api.github.com/repos/cartalyst/data-grid/zipball/798a0a7945f249c4f8717029520932246c6d73c6",
+                "reference": "798a0a7945f249c4f8717029520932246c6d73c6",
                 "shasum": ""
             },
             "require": {
@@ -141,7 +141,7 @@
                 "source": "https://github.com/cartalyst/data-grid/tree/feature/4.0",
                 "issues": "https://github.com/cartalyst/data-grid/issues"
             },
-            "time": "2015-11-02 21:26:48"
+            "time": "2015-11-03 04:14:40"
         },
         {
             "name": "cartalyst/data-grid-export",
@@ -728,12 +728,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "0e4cf9c1b93dc2f43ed2dc8b702c245c5dcf6c07"
+                "reference": "be012558f686a44cc95c227ac7f5d923b6b40e56"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/0e4cf9c1b93dc2f43ed2dc8b702c245c5dcf6c07",
-                "reference": "0e4cf9c1b93dc2f43ed2dc8b702c245c5dcf6c07",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/be012558f686a44cc95c227ac7f5d923b6b40e56",
+                "reference": "be012558f686a44cc95c227ac7f5d923b6b40e56",
                 "shasum": ""
             },
             "require": {
@@ -849,7 +849,7 @@
                 "framework",
                 "laravel"
             ],
-            "time": "2015-11-01 22:25:00"
+            "time": "2015-11-03 03:28:59"
         },
         {
             "name": "league/flysystem",
