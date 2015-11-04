@@ -1,0 +1,277 @@
+/*
+ |--------------------------------------------------------------------------
+ | Demo Application - Data Grid - app.scss
+ |--------------------------------------------------------------------------
+ |
+ | We implement Material Design Lite BEM syntax through sass. This allows
+ | the demo to focus on clean, readable markup.
+ |
+ */
+@import "demo_variables";
+@import "demo";
+
+body {
+    margin: 0;
+}
+
+/* Disable ugly boxes around images in IE10 */
+a img {
+    border: 0px;
+}
+
+::-moz-selection {
+    background-color: unquote("rgba(#{$palette-amber-500}, 1)");
+    color: #fff;
+}
+
+::selection {
+    background-color: #6ab344;
+    color: #fff;
+}
+
+.demo-search-box .mdl-textfield__input {
+    color: rgba(0, 0, 0, 0.87);
+}
+
+.demo-header .mdl-menu__container {
+    z-index: 50;
+    margin: 0 !important;
+}
+
+.mdl-textfield--expandable {
+    width: auto;
+}
+
+.demo-fab {
+    position: absolute;
+    right: 20%;
+    bottom: -26px;
+    z-index: 3;
+    background: #64ffda !important;
+    color: black !important;
+}
+
+.demo-mobile-title {
+    display: none !important;
+}
+
+.demo-logo-image {
+
+}
+
+.demo-header {
+    overflow: visible;
+    background-color: white;
+}
+
+.demo-header .material-icons {
+    color: #767777 !important;
+}
+
+.demo-header .mdl-layout__drawer-button {
+    background: transparent;
+    color: #767777;
+}
+
+.demo-header .mdl-navigation__link {
+    color: #757575;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.demo-navigation-container {
+
+    /* Simple hack to make the overflow happen to the left instead... */
+    direction: rtl;
+    order: 1;
+    width: 500px;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.demo-navigation {
+
+    /* ... and now make sure the content is actually LTR */
+    direction: ltr;
+    justify-content: flex-end;
+    width: 800px;
+}
+
+.demo-search-box.is-focused + .demo-navigation-container {
+    opacity: 0;
+    width: 100px;
+}
+
+.demo-navigation .mdl-navigation__link {
+    display: inline-block;
+    height: 60px;
+    line-height: 68px;
+    background-color: transparent !important;
+    border-bottom: 4px solid transparent;
+}
+
+.demo-navigation .mdl-navigation__link:hover {
+    border-bottom: 4px solid #8bc34a;
+}
+
+.demo-search-box {
+    order: 2;
+    margin-left: 16px;
+    margin-right: 16px;
+}
+
+.demo-more-button {
+    order: 3;
+}
+
+.demo-drawer {
+    border-right: none;
+}
+
+.demo-drawer-separator {
+    height: 1px;
+    background-color: #dcdcdc;
+    margin: 8px 0;
+}
+
+.demo-drawer .mdl-navigation__link.mdl-navigation__link {
+    font-size: 14px;
+    color: #757575;
+}
+
+.demo-drawer span.mdl-navigation__link.mdl-navigation__link {
+    color: #8bc34a;
+}
+
+.demo-drawer .mdl-layout-title {
+    position: relative;
+    background: #6ab344;
+    height: 160px;
+}
+
+.demo-drawer .demo-logo-image {
+    position: absolute;
+    bottom: 16px;
+}
+
+.demo-be-together-section {
+    position: relative;
+    height: 800px;
+    width: auto;
+
+    background:unquote("rgba(#{$palette-amber-500}, 1)");
+    //background: url('images/slide01.jpg') center 30% no-repeat;
+    background-size: cover;
+}
+
+
+.demo-footer {
+    background-color: #fafafa;
+    position: relative;
+}
+
+.demo-footer a:hover {
+    color: #8bc34a;
+}
+
+.demo-footer .mdl-mega-footer--top-section::after {
+    border-bottom: none;
+}
+
+.demo-footer .mdl-mega-footer--middle-section::after {
+    border-bottom: none;
+}
+
+.demo-footer .mdl-mega-footer--bottom-section {
+    position: relative;
+}
+
+.demo-footer .mdl-mega-footer--bottom-section a {
+    margin-right: 2em;
+}
+
+.demo-footer .mdl-mega-footer--right-section a .material-icons {
+    position: relative;
+    top: 6px;
+}
+
+.demo-link-menu:hover {
+    cursor: pointer;
+}
+
+/**** Mobile layout ****/
+@media (max-width:900px) {
+    .demo-navigation-container {
+        display: none;
+    }
+
+    .demo-title {
+        display: none !important;
+    }
+
+    .demo-mobile-title {
+        display: block !important;
+        position: absolute;
+        left: calc(50% - 70px);
+        top: 12px;
+        transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* WebViews in iOS 9 break the "~" operator, and WebViews in OS X 10.10 break
+       consecutive "+" operators in some cases. Therefore, we need to use both
+       here to cover all the bases. */
+    .android.demo-search-box.is-focused ~ .demo-mobile-title,
+    .demo-search-box.is-focused + .demo-navigation-container + .demo-mobile-title {
+        opacity: 0;
+    }
+
+    .demo-more-button {
+        display: none;
+    }
+
+    .demo-search-box.is-focused {
+        width: calc(100% - 48px);
+    }
+
+    .demo-search-box .mdl-textfield__expandable-holder {
+        width: 100%;
+    }
+
+    .demo-be-together-section {
+        height: 350px;
+    }
+
+    .demo-slogan {
+        font-size: 26px;
+        margin: 0 16px;
+        padding-top: 24px;
+    }
+
+    .demo-sub-slogan {
+        font-size: 16px;
+        margin: 0 16px;
+        padding-top: 8px;
+    }
+
+    .demo-create-character {
+        padding-top: 200px;
+        font-size: 16px;
+    }
+
+    .demo-create-character img {
+        height: 12px;
+    }
+
+    .demo-fab {
+        display: none;
+    }
+
+    .demo-wear-band-text {
+        margin-left: 0;
+        padding: 16px;
+    }
+
+    .demo-footer .mdl-mega-footer--bottom-section {
+        display: none;
+    }
+
+}

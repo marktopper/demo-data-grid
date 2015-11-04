@@ -1,0 +1,46 @@
+/*
+ |--------------------------------------------------------------------------
+ | Demo Application - Data Grid - demo.scss
+ |--------------------------------------------------------------------------
+ |
+ | We use the Material Design Lite project by Google. An implementation of Material
+ | Design components in vanilla CSS, JS, and HTML. http://www.getmdl.io/
+ |
+ | You are not required to use this framework for your own implementations
+ | of our packages, use whatever works best for you :)
+ |
+ */
+
+// Variables and mixins
+//@import "material-design-lite/variables";
+@import "demo_variables";
+@import "material-design-lite/mixins";
+
+// Resets and dependencies
+@import "material-design-lite/resets/resets";
+@import "material-design-lite/typography/typography";
+
+// Components
+@import "material-design-lite/palette/palette";
+@import "material-design-lite/ripple/ripple";
+@import "material-design-lite/animation/animation";
+@import "material-design-lite/badge/badge";
+@import "material-design-lite/button/button";
+@import "material-design-lite/card/card";
+@import "material-design-lite/checkbox/checkbox";
+@import "material-design-lite/data-table/data-table";
+@import "material-design-lite/footer/mega_footer";
+@import "material-design-lite/footer/mini_footer";
+@import "material-design-lite/icon-toggle/icon-toggle";
+@import "material-design-lite/menu/menu";
+@import "material-design-lite/progress/progress";
+@import "material-design-lite/layout/layout";
+@import "material-design-lite/radio/radio";
+@import "material-design-lite/slider/slider";
+@import "material-design-lite/spinner/spinner";
+@import "material-design-lite/switch/switch";
+@import "material-design-lite/tabs/tabs";
+@import "material-design-lite/textfield/textfield";
+@import "material-design-lite/tooltip/tooltip";
+@import "material-design-lite/shadow/shadow";
+@import "material-design-lite/grid/grid";
