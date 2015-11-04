@@ -1,4 +1,4 @@
-<div class="demo-header mdl-layout__header mdl-layout__header--waterfall">
+<header class="demo-header mdl-layout__header mdl-layout__header--waterfall">
     <div class="mdl-layout__header-row">
         <span class="demo-title mdl-layout-title">
             <img class="demo-logo-image" src="images/brand-cartalyst.svg">
@@ -23,4 +23,4 @@
             <li class="mdl-menu__item">License</li>
         </ul>
     </div>
-</div>
+</header>
